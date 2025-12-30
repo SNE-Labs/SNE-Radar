@@ -76,17 +76,24 @@ export default function ChartPage() {
       <Chart symbol={selectedSymbol} timeframe={timeframe} height={600} />
 
       {/* Indicators Sidebar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* RSI - Sempre disponível */}
         <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
           <div className="text-sm text-[#A6A6A6] mb-2">RSI (14)</div>
           {loadingIndicators ? (
             <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
           ) : (
-            <div className="text-2xl font-mono font-bold">
-              {indicators?.rsi?.toFixed(2) || '--'}
+            <div className={cn(
+              'text-2xl font-mono font-bold',
+              indicators?.rsi && safeNumber(indicators.rsi, 0) > 70 ? 'text-[#FF4D4F]' :
+              indicators?.rsi && safeNumber(indicators.rsi, 0) < 30 ? 'text-[#00C48C]' : 'text-[#F7F7F8]'
+            )}>
+              {safeNumber(indicators?.rsi, 0).toFixed(1) || '--'}
             </div>
           )}
         </div>
+
+        {/* MACD - Sempre disponível */}
         <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
           <div className="text-sm text-[#A6A6A6] mb-2">MACD</div>
           {loadingIndicators ? (
@@ -94,22 +101,52 @@ export default function ChartPage() {
           ) : (
             <div className={cn(
               'text-2xl font-mono font-bold',
-              indicators?.macd && indicators.macd > 0 ? 'text-[#00C48C]' : 'text-[#FF4D4F]'
+              indicators?.macd && safeNumber(indicators.macd, 0) > 0 ? 'text-[#00C48C]' : 'text-[#FF4D4F]'
             )}>
-              {indicators?.macd ? (indicators.macd > 0 ? '+' : '') + indicators.macd.toFixed(2) : '--'}
+              {indicators?.macd ? (safeNumber(indicators.macd, 0) > 0 ? '+' : '') + safeNumber(indicators.macd, 0).toFixed(2) : '--'}
             </div>
           )}
         </div>
+
+        {/* Volume - Sempre disponível */}
         <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
           <div className="text-sm text-[#A6A6A6] mb-2">Volume 24h</div>
           {loadingIndicators ? (
             <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
           ) : (
             <div className="text-2xl font-mono font-bold">
-              {indicators?.volume ? (indicators.volume / 1e6).toFixed(1) + 'M' : '--'}
+              {indicators?.volume ? (safeNumber(indicators.volume, 0) / 1e6).toFixed(1) + 'M' : '--'}
             </div>
           )}
         </div>
+
+        {/* Indicadores avançados - Apenas premium+ */}
+        {tier !== 'free' && (
+          <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
+            <div className="text-sm text-[#A6A6A6] mb-2">
+              {tier === 'pro' ? 'Bollinger Bands' : 'Stochastic'}
+            </div>
+            {loadingIndicators ? (
+              <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
+            ) : (
+              <div className="text-lg font-mono font-bold">
+                {tier === 'pro' && indicators?.bollinger_bands ? (
+                  <div className="text-xs space-y-1">
+                    <div>U: {safeNumber(indicators.bollinger_bands.upper, 0).toFixed(0)}</div>
+                    <div>L: {safeNumber(indicators.bollinger_bands.lower, 0).toFixed(0)}</div>
+                  </div>
+                ) : tier !== 'free' && indicators?.stochastic ? (
+                  <div className="text-xs space-y-1">
+                    <div>K: {safeNumber(indicators.stochastic.k, 0).toFixed(1)}</div>
+                    <div>D: {safeNumber(indicators.stochastic.d, 0).toFixed(1)}</div>
+                  </div>
+                ) : (
+                  '--'
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {tier === 'free' && (

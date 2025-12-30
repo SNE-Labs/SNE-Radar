@@ -95,13 +95,7 @@ export default function Dashboard() {
     )
   }
 
-  const topMovers = data?.top || [
-    { symbol: 'BTC/USDT', price: 43250.50, change24h: 5.23, volume: '2.5B' },
-    { symbol: 'ETH/USDT', price: 2280.75, change24h: -2.14, volume: '1.8B' },
-    { symbol: 'SOL/USDT', price: 98.32, change24h: 12.45, volume: '850M' },
-    { symbol: 'BNB/USDT', price: 315.20, change24h: 3.67, volume: '620M' },
-    { symbol: 'XRP/USDT', price: 0.5234, change24h: -1.23, volume: '450M' },
-  ]
+  const topMovers = data?.top_movers || []
 
   return (
     <div className="space-y-8">
@@ -109,10 +103,33 @@ export default function Dashboard() {
       <section>
         <h2 className="text-2xl font-semibold mb-6">Market Summary</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <MetricCard label="BTC Dominance" value="48.2%" trend={1.2} />
-          <MetricCard label="Market Cap" value="$1.8T" trend={-0.5} />
-          <MetricCard label="24h Volume" value="$95B" trend={5.3} />
-          <MetricCard label="Fear & Greed" value="62" subtitle="Greed" color="success" />
+          <MetricCard
+            label="BTC Dominance"
+            value={data?.market_summary ? `${safeNumber(data.market_summary.btc_dominance, 0).toFixed(1)}%` : '--'}
+            trend={1.2}
+          />
+          <MetricCard
+            label="Market Cap"
+            value={data?.market_summary?.market_cap ? `$${data.market_summary.market_cap}` : '--'}
+            trend={-0.5}
+          />
+          <MetricCard
+            label="24h Volume"
+            value={data?.market_summary?.volume_24h ? `$${data.market_summary.volume_24h}` : '--'}
+            trend={5.3}
+          />
+          <MetricCard
+            label="Fear & Greed"
+            value={data?.market_summary?.fear_greed_index?.toString() || '--'}
+            subtitle={data?.market_summary?.fear_greed_index ?
+              (data.market_summary.fear_greed_index > 75 ? "Extreme Greed" :
+               data.market_summary.fear_greed_index > 55 ? "Greed" :
+               data.market_summary.fear_greed_index > 45 ? "Neutral" :
+               data.market_summary.fear_greed_index > 25 ? "Fear" : "Extreme Fear") : ""}
+            color={data?.market_summary?.fear_greed_index ?
+              (data.market_summary.fear_greed_index > 55 ? "success" :
+               data.market_summary.fear_greed_index > 45 ? "warning" : "critical") : undefined}
+          />
         </div>
       </section>
 
@@ -155,25 +172,25 @@ export default function Dashboard() {
           <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-6">
             <div className="text-sm text-[#A6A6A6] mb-2">Análises Hoje</div>
             <div className="text-3xl font-mono font-bold text-[#FF6A00]">
-              0/{currentLimits.analyses}
+              {safeNumber(data?.stats?.analyses_today, 0)}/{currentLimits.analyses}
             </div>
           </div>
           <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-6">
             <div className="text-sm text-[#A6A6A6] mb-2">Taxa de Sucesso</div>
             <div className="text-3xl font-mono font-bold text-[#00C48C]">
-              --
+              {data?.stats?.success_rate ? `${safeNumber(data.stats.success_rate, 0).toFixed(1)}%` : '--'}
             </div>
           </div>
           <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-6">
             <div className="text-sm text-[#A6A6A6] mb-2">Melhor Setup</div>
             <div className="text-xl font-mono font-bold">
-              --
+              {safeString(data?.stats?.best_setup, '--')}
             </div>
           </div>
           <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-6">
             <div className="text-sm text-[#A6A6A6] mb-2">Próxima Análise</div>
             <div className="text-xl font-mono font-bold">
-              Disponível
+              {data?.stats?.next_analysis_available ? 'Disponível' : 'Aguardar'}
             </div>
           </div>
         </div>

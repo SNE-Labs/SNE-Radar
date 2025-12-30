@@ -62,16 +62,19 @@ export default function Chart({ symbol = 'BTCUSDT', timeframe = '1h', height = 6
         setLoading(true)
         setError(null)
         const response = await chartApi.getCandles(symbol, timeframe, 500)
-        const candles = response.data.candles || []
+        const rawData = response.data?.candles || response.data || []
 
-        // Converter para formato do Lightweight Charts
-        const chartData: CandlestickData[] = candles.map((candle: any) => ({
-          time: (candle.time / 1000) as Time, // Converter de ms para segundos
-          open: parseFloat(candle.open),
-          high: parseFloat(candle.high),
-          low: parseFloat(candle.low),
-          close: parseFloat(candle.close),
-        }))
+        // Converter para formato do Lightweight Charts com validação
+        const chartData: CandlestickData[] = rawData
+          .filter((candle: any) => candle && typeof candle === 'object')
+          .map((candle: any) => ({
+            time: (safeNumber(candle.time, Date.now()) / 1000) as Time,
+            open: safeNumber(candle.open, 0),
+            high: safeNumber(candle.high, 0),
+            low: safeNumber(candle.low, 0),
+            close: safeNumber(candle.close, 0),
+          }))
+          .filter(candle => candle.open > 0 && candle.close > 0)
 
         candlestickSeries.setData(chartData)
         chart.timeScale().fitContent()
