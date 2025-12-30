@@ -19,14 +19,15 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:5000',
+        target: process.env.VITE_API_URL || 'https://api.snelabs.space',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
       '/socket.io': {
-        target: process.env.VITE_WS_URL || 'http://localhost:5000',
+        target: process.env.VITE_WS_URL || 'https://api.snelabs.space',
         ws: true,
         changeOrigin: true,
+        secure: true,
       },
     },
   },

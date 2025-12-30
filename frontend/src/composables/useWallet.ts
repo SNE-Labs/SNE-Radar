@@ -62,7 +62,7 @@ export const isLoading = ref(false)
 export const error = ref<string | null>(null)
 
 // API base URL
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://api.snelabs.space'
 const SIWE_DOMAIN = import.meta.env.VITE_SIWE_DOMAIN || 'radar.snelabs.space'
 const SIWE_ORIGIN = import.meta.env.VITE_SIWE_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : 'https://radar.snelabs.space')
 
