@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 @app.route('/health', methods=['GET'])
 def health():
     """Health check endpoint"""
+    logger.info("Health check endpoint called")
     return jsonify({
         'status': 'healthy',
         'service': 'sne-web',

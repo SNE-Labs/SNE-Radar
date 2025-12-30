@@ -5,11 +5,18 @@ from flask import Flask
 from flask_socketio import SocketIO
 from flask_cors import CORS
 import os
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+logger.info("Initializing Flask app...")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://localhost/sne')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+logger.info("Flask app created successfully")
 
 # CORS configuration for cross-origin requests from radar.snelabs.space
 CORS(app, origins=["https://radar.snelabs.space", "https://www.radar.snelabs.space"],

@@ -195,6 +195,7 @@ def get_nonce():
     Endpoint: POST /api/auth/nonce
     Body: { "address": "0x..." }
     """
+    logger.info("Nonce endpoint called")
     try:
         data = request.get_json()
         if not data or 'address' not in data:
