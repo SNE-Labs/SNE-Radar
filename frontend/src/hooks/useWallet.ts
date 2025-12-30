@@ -20,10 +20,20 @@ export function useWallet() {
 
   // Verificar autenticação ao montar e conectar wallet
   useEffect(() => {
-    if (isConnected && address && !isAuthenticated) {
-      // Wallet conectada mas não autenticada - verificar se já tem sessão válida
-      checkAuth()
+    const initializeAuth = async () => {
+      // Primeiro tentar restaurar sessão se houver token salvo
+      const savedToken = localStorage.getItem('auth_token')
+      if (savedToken && !isAuthenticated) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+        await checkAuth()
+      }
+      // Depois verificar se wallet conectada precisa de autenticação
+      else if (isConnected && address && !isAuthenticated) {
+        await checkAuth()
+      }
     }
+
+    initializeAuth()
   }, [isConnected, address, isAuthenticated])
 
   // Capturar erros globais de WalletConnect
@@ -56,6 +66,13 @@ export function useWallet() {
     if (!address) return false
 
     try {
+      // Verificar se há token salvo
+      const savedToken = localStorage.getItem('auth_token')
+      if (savedToken) {
+        // Configurar axios com o token salvo
+        api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      }
+
       const response = await api.get('/api/auth/verify')
 
       if (response.status === 200) {
@@ -66,6 +83,9 @@ export function useWallet() {
       }
     } catch (error) {
       console.error('Auth check failed:', error)
+      // Se falhar, limpar token inválido
+      localStorage.removeItem('auth_token')
+      delete api.defaults.headers.common['Authorization']
     }
 
     setIsAuthenticated(false)
@@ -116,17 +136,23 @@ export function useWallet() {
         throw new Error(authRes.data?.error || 'Authentication failed')
       }
 
-      const { license } = authRes.data
+      const { token, tier } = authRes.data
+
+      // Salvar token JWT
+      localStorage.setItem('auth_token', token)
+
+      // Configurar axios para enviar token automaticamente
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
 
       // Atualizar estado local
-      setTier(license.tier || 'free')
+      setTier(tier || 'free')
       setIsAuthenticated(true)
 
       // Garantir que o estado esteja sincronizado chamando verify
       await checkAuth()
 
       toast.success('Autenticado com sucesso!')
-      return { license }
+      return { token, tier }
     } catch (error: any) {
       console.error('SIWE error:', error)
       toast.error(error.message || 'Erro ao autenticar')
@@ -146,6 +172,10 @@ export function useWallet() {
     } catch (error) {
       console.error('Logout error:', error)
     }
+
+    // Limpar token e headers
+    localStorage.removeItem('auth_token')
+    delete api.defaults.headers.common['Authorization']
 
     setTier('free')
     setIsAuthenticated(false)

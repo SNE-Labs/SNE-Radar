@@ -211,6 +211,11 @@ def get_nonce():
         nonce_key = f'siwe:nonce:{nonce}'
         redis_client.setex(nonce_key, 300, address)
 
+        # VALIDAR: Redis deve ter armazenado o nonce corretamente
+        stored_address = redis_client.get(nonce_key)
+        if not stored_address or stored_address != address:
+            return jsonify({'error': 'Nonce storage unavailable - Redis not working'}), 503
+
         return jsonify({'nonce': nonce}), 200
 
     except Exception as e:
