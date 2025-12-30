@@ -13,6 +13,7 @@ import os
 
 from app.utils.redis_safe import SafeRedis
 from app.security.siwe_verify import verify_siwe, parse_siwe_message
+from app.models import db, get_user_tier, set_user_tier, save_analysis, get_user_analyses_count
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -129,7 +130,7 @@ def require_auth(f):
     return wrapper
 
 def get_user_tier(wallet_address: str) -> str:
-    """Obtém tier do usuário do Redis/PostgreSQL"""
+    """Obtém tier do usuário do PostgreSQL com cache Redis"""
     try:
         # Cache no Redis (TTL: 1 hora)
         cache_key = f'user:tier:{wallet_address.lower()}'
@@ -138,14 +139,19 @@ def get_user_tier(wallet_address: str) -> str:
         if cached_tier:
             return cached_tier
 
-        # TODO: Implementar consulta no PostgreSQL
-        # Por enquanto, retorna 'free' como padrão
-        default_tier = 'free'
+        # Buscar no PostgreSQL
+        from app.models import UserTier
+        user_tier = UserTier.query.filter_by(user_address=wallet_address.lower()).first()
+
+        if user_tier and user_tier.is_active():
+            tier = user_tier.tier
+        else:
+            tier = 'free'
 
         # Cache por 1 hora
-        redis_client.setex(cache_key, 3600, default_tier)
+        redis_client.setex(cache_key, 3600, tier)
 
-        return default_tier
+        return tier
 
     except Exception as e:
         # Fail-safe: retorna free

@@ -4,7 +4,7 @@ API endpoints for SNE Web
 from flask import request, jsonify, g
 from . import app
 from .motor import analisar_par, obter_sinal
-from .auth_siwe import require_auth
+from .auth_siwe import require_auth, check_tier_limits, save_analysis
 import logging
 import os
 
@@ -70,6 +70,12 @@ def analyze_authenticated():
 
         if resultado.get('status') == 'error':
             return jsonify(resultado), 500
+
+        # Salvar análise no banco
+        try:
+            save_analysis(user['address'], symbol, timeframe, resultado, tier)
+        except Exception as db_error:
+            logger.warning(f"Failed to save analysis: {str(db_error)}")
 
         # Adicionar info do tier na resposta
         resultado['tier'] = tier
