@@ -10,26 +10,49 @@ import { scrollSepolia } from 'viem/chains'
 // Project ID do WalletConnect (pode ser sobrescrito por variável de ambiente)
 const projectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || '3fcc6bba6f1de962d911bb5b5c3dba68'
 
-export const wagmiConfig = createConfig({
-  chains: [scrollSepolia],
-  connectors: [
-    new WalletConnectConnector({
+// Inicializar wagmiConfig de forma segura (proteção SSR)
+function createWagmiConfig() {
+  // Em SSR, criar um config mínimo
+  if (typeof window === 'undefined') {
+    return createConfig({
       chains: [scrollSepolia],
-      options: {
-        projectId: projectId,
+      connectors: [],
+      transports: {
+        [scrollSepolia.id]: http(),
       },
-    }),
-    new InjectedConnector({
-      chains: [scrollSepolia],
-    }),
-    new MetaMaskConnector({
-      chains: [scrollSepolia],
     })
-  ],
-  transports: {
-    [scrollSepolia.id]: http(),
-  },
-})
+  }
+  
+  // No browser, criar config completo
+  return createConfig({
+    chains: [scrollSepolia],
+    connectors: [
+      new WalletConnectConnector({
+        chains: [scrollSepolia],
+        options: {
+          projectId: projectId,
+        },
+      }),
+      new InjectedConnector({
+        chains: [scrollSepolia],
+      }),
+      new MetaMaskConnector({
+        chains: [scrollSepolia],
+      })
+    ],
+    transports: {
+      [scrollSepolia.id]: http(),
+    },
+  })
+}
+
+export const wagmiConfig = createWagmiConfig()
+
+function getWagmiConfig() {
+  return wagmiConfig
+}
+
+export { getWagmiConfig }
 
 // Estado reativo
 export const address = ref<string | null>(null)
@@ -41,21 +64,26 @@ export const error = ref<string | null>(null)
 // API base URL
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 const SIWE_DOMAIN = import.meta.env.VITE_SIWE_DOMAIN || 'radar.snelabs.space'
-const SIWE_ORIGIN = import.meta.env.VITE_SIWE_ORIGIN || window.location.origin
+const SIWE_ORIGIN = import.meta.env.VITE_SIWE_ORIGIN || (typeof window !== 'undefined' ? window.location.origin : 'https://radar.snelabs.space')
 
 // Conectar wallet
 export const connectWallet = async () => {
+  if (typeof window === 'undefined') return
+  
   isLoading.value = true
   error.value = null
   
   try {
-    const account = getAccount(wagmiConfig)
+    const config = getWagmiConfig()
+    if (!config) return
+    
+    const account = getAccount(config)
     
     if (!account.isConnected) {
-      await connect(wagmiConfig, { connector: new InjectedConnector({ chains: [scrollSepolia] }) })
+      await connect(config, { connector: new InjectedConnector({ chains: [scrollSepolia] }) })
     }
     
-    const newAccount = getAccount(wagmiConfig)
+    const newAccount = getAccount(config)
     if (newAccount.address) {
       address.value = newAccount.address
       isConnected.value = true
@@ -70,10 +98,20 @@ export const connectWallet = async () => {
 
 // Desconectar wallet
 export const disconnectWallet = async () => {
-  await disconnect(wagmiConfig)
-  address.value = null
-  isConnected.value = false
-  tier.value = 'free'
+  if (typeof window === 'undefined') return
+  
+  try {
+    const config = getWagmiConfig()
+    if (config) {
+      await disconnect(config)
+    }
+  } catch (err) {
+    // Ignorar erros no disconnect
+  } finally {
+    address.value = null
+    isConnected.value = false
+    tier.value = 'free'
+  }
 }
 
 // Assinar mensagem (via wagmi core - correto)
@@ -82,8 +120,17 @@ const signMessageWithWallet = async (message: string) => {
     throw new Error('Wallet not connected')
   }
   
+  if (typeof window === 'undefined') {
+    throw new Error('Window not available')
+  }
+  
   // ✅ Usar signMessage do @wagmi/core (não publicClient)
-  const signature = await signMessage(wagmiConfig, {
+  const config = getWagmiConfig()
+  if (!config) {
+    throw new Error('Wagmi config not available')
+  }
+  
+  const signature = await signMessage(config, {
     message: message as `0x${string}` | string
   })
   
