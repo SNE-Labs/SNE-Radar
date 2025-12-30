@@ -1,4 +1,5 @@
 import { useAccount, useConnect, useSignMessage, useDisconnect } from 'wagmi'
+import { toast } from 'sonner'
 import { SiweMessage } from 'siwe'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
@@ -24,6 +25,32 @@ export function useWallet() {
       checkAuth()
     }
   }, [isConnected, address, isAuthenticated])
+
+  // Capturar erros globais de WalletConnect
+  useEffect(() => {
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const error = event.reason
+
+      // Verificar se é erro do WalletConnect/relayer
+      if (error?.message?.includes('relayer') ||
+          error?.message?.includes('socket error') ||
+          error?.message?.includes('Connection interrupted') ||
+          error?.message?.includes('walletconnect')) {
+
+        console.error('WalletConnect relayer error:', error)
+        toast.error('Conexão instável. Tente reconectar sua wallet.')
+
+        // Impedir que apareça como unhandled rejection
+        event.preventDefault()
+      }
+    }
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
+
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [])
 
   const checkAuth = async () => {
     if (!address) return false
@@ -135,13 +162,43 @@ export function useWallet() {
         throw new Error('Connector not found')
       }
 
-      connect({ connector })
+      // Capturar erros de WebSocket/WalletConnect
+      try {
+        connect({ connector })
+      } catch (connectError: any) {
+        console.error('WalletConnect connection error:', connectError)
+
+        // Tratar erros específicos do WalletConnect
+        if (connectError.message?.includes('socket error') ||
+            connectError.message?.includes('Connection interrupted') ||
+            connectError.message?.includes('relayer')) {
+          throw new Error('Problema de conexão com WalletConnect. Verifique sua internet e tente novamente.')
+        }
+
+        throw connectError
+      }
+
       toast.success('Wallet conectada!')
 
       // Após conectar, verificar se já está autenticado
       // Nota: checkAuth será chamado pelo useEffect quando isConnected mudar
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao conectar wallet')
+      console.error('Wallet connection error:', error)
+
+      // Mensagens de erro mais amigáveis
+      let errorMessage = 'Erro ao conectar wallet'
+
+      if (error.message?.includes('User rejected')) {
+        errorMessage = 'Conexão rejeitada pelo usuário'
+      } else if (error.message?.includes('MetaMask extension not found')) {
+        errorMessage = 'MetaMask não encontrada. Instale a extensão MetaMask.'
+      } else if (error.message?.includes('socket error') || error.message?.includes('relayer')) {
+        errorMessage = 'Problema de conexão. Verifique sua internet e tente novamente.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      toast.error(errorMessage)
       throw error
     }
   }
