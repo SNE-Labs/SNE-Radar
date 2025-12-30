@@ -6,6 +6,11 @@ Calcula score de confluência entre camadas
 """
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 def calcular_confluencia(mtf, fluxo, zonas, sentiment):
     """
     Calcula score de confluência (0-10)
@@ -19,13 +24,6 @@ def calcular_confluencia(mtf, fluxo, zonas, sentiment):
     Returns:
         dict com score e detalhes
     """
-
-    # DEBUG: Log para identificar o problema
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info(f"DEBUG calcular_confluencia: mtf type={type(mtf)}")
-    if isinstance(mtf, dict) and 'confluencia' in mtf:
-        logger.info(f"DEBUG mtf['confluencia'] type={type(mtf['confluencia'])} value={mtf['confluencia']}")
 
     score = 0
     validacoes = []
