@@ -3,11 +3,10 @@ Modelos SQLAlchemy para SNE Radar
 Baseado no schema existente do PostgreSQL
 """
 
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import JSONB
 
-db = SQLAlchemy()
+from .extensions import db
 
 class User(db.Model):
     """Tabela de usuários (se existir)"""

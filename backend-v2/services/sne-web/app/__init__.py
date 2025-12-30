@@ -4,7 +4,7 @@ SNE Web Service - Flask API with WebSocket support
 import eventlet
 eventlet.monkey_patch()  # Deve ser o primeiro import
 
-from flask import Flask
+from flask import Flask, jsonify
 from flask_socketio import SocketIO
 from flask_cors import CORS
 import os
@@ -17,17 +17,28 @@ from .extensions import db
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+socketio = SocketIO(
+    cors_allowed_origins=["https://radar.snelabs.space", "https://www.radar.snelabs.space"],
+    async_mode="eventlet"
+)
+
 def create_app():
     """Application factory pattern"""
     logger.info("Creating Flask app...")
 
     app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://localhost/sne')
+
+    # DATABASE_URL fix for Render (postgres:// -> postgresql://)
+    db_url = os.environ.get('DATABASE_URL')
+    if db_url and db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'postgresql://localhost/sne'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Initialize extensions
     db.init_app(app)
+    socketio.init_app(app)
 
     # CORS configuration
     CORS(app, origins=["https://radar.snelabs.space", "https://www.radar.snelabs.space"],
@@ -35,15 +46,11 @@ def create_app():
          allow_headers=["Content-Type", "Authorization"],
          supports_credentials=True)
 
-    # SocketIO (para desenvolvimento local)
-    socketio = SocketIO(app, cors_allowed_origins=["https://radar.snelabs.space", "https://www.radar.snelabs.space"],
-                       async_mode='threading')
-
     logger.info("Flask app created successfully")
-    return app, socketio
+    return app
 
 # Create app instance for production (Gunicorn)
-app, socketio = create_app()
+app = create_app()
 
 # Simple test route
 @app.route('/', methods=['GET'])
@@ -51,7 +58,7 @@ def root():
     logger.info("Root endpoint called")
     return jsonify({'message': 'SNE Web API is running', 'status': 'ok'}), 200
 
-# Database initialization endpoint
+# Database initialization endpoint (manual)
 @app.route('/init-db', methods=['POST'])
 def init_database():
     """Endpoint para inicializar banco de dados"""
@@ -65,13 +72,14 @@ def init_database():
         logger.error(f"Database initialization failed: {str(e)}")
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# Initialize database automatically
-from .models import init_db_auto
-try:
-    with app.app_context():
-        init_db_auto()
-except Exception as e:
-    logger.warning(f"Database auto-initialization failed: {str(e)}")
+# Database auto-initialization (only if explicitly enabled)
+if os.getenv("AUTO_INIT_DB") == "true":
+    from .models import init_db_auto
+    try:
+        with app.app_context():
+            init_db_auto()
+    except Exception as e:
+        logger.warning(f"Database auto-initialization failed: {str(e)}")
 
 # Register blueprints
 from . import main, api, auth_siwe, dashboard_api, charts_api

@@ -30,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD python -c "from app import app; print('OK')"
 
 # Comando para executar (Gunicorn produção)
-CMD ["sh", "-c", "PYTHONPATH=/app gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:${PORT:-8080} wsgi:app"]
+CMD ["sh", "-c", "PYTHONPATH=/app gunicorn -k eventlet -w 1 --timeout 120 --bind 0.0.0.0:${PORT:-8080} wsgi:app"]
