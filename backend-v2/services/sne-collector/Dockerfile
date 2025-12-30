@@ -1,12 +1,6 @@
 # Dockerfile para SNE Data Collector
 FROM python:3.11-slim
 
-# Instalar dependências do sistema
-RUN apt-get update && apt-get install -y \
-    gcc \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 # Criar diretório da aplicação
 WORKDIR /app
 
@@ -15,10 +9,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código
-COPY . .
+COPY app.py .
 
-# Expor porta
-EXPOSE 8080
-
-# Comando para executar
-CMD ["python", "app.py"]
+# Comando para executar (usa PORT do Railway)
+CMD ["sh", "-c", "gunicorn -b 0.0.0.0:${PORT:-8080} app:app"]
