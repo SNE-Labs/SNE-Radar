@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useWallet } from '../hooks/useWallet'
 import { chartApi } from '../services/api'
-import { cn } from '../lib/utils'
+import { safeNumber, cn } from '../lib/utils'
 import Chart from '../components/Chart'
 
 export default function ChartPage() {

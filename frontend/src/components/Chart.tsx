@@ -3,7 +3,7 @@ import { createChart, IChartApi, ISeriesApi, CandlestickData, ColorType } from '
 import type { Time } from 'lightweight-charts'
 import { chartApi } from '../services/api'
 import { useWallet } from '../hooks/useWallet'
-import { cn } from '../lib/utils'
+import { cn, safeNumber } from '../lib/utils'
 
 interface ChartProps {
   symbol?: string

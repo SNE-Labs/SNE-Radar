@@ -3,7 +3,7 @@ import { Activity } from 'lucide-react'
 import { useWallet } from '../hooks/useWallet'
 import { analysisApi } from '../services/api'
 import { Button } from '../app/components/Button'
-import { formatCurrency, cn } from '../lib/utils'
+import { formatCurrency, safeNumber, cn } from '../lib/utils'
 import { toast } from 'sonner'
 
 export default function Analysis() {

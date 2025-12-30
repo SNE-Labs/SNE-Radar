@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useWallet } from '../hooks/useWallet'
 import { dashboardApi } from '../services/api'
-import { formatCurrency, formatPercentage, cn } from '../lib/utils'
+import { formatCurrency, formatPercentage, safeNumber, cn } from '../lib/utils'
 
 interface MetricCardProps {
   label: string
