@@ -245,49 +245,32 @@ def coletar_dados(symbol, interval, limit=200):
         
         interval = interval_map.get(interval, interval)
         
-        url = "https://api.binance.com/api/v3/klines"
-        params = {"symbol": symbol, "interval": interval, "limit": limit}
-        
-        if requests is None:
-            logger.error("Módulo 'requests' não está disponível")
-            raise ImportError("Módulo 'requests' não está disponível. Instale com: pip install requests")
-        
-        logger.info(f"Coletando dados da Binance: {symbol} {interval}")
-        response = requests.get(url, params=params, timeout=30)
-        
-        logger.info(f"Resposta Binance: status_code={response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            if not data or len(data) == 0:
-                logger.warning(f"Nenhum dado retornado da Binance para {symbol}")
-                return None
-                
-            df = pd.DataFrame(data, columns=[
-                'timestamp', 'open', 'high', 'low', 'close', 'volume',
-                'close_time', 'quote_volume', 'trades', 'taker_buy_base',
-                'taker_buy_quote', 'ignore'
-            ])
-            df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']].astype({
-                'timestamp': 'datetime64[ms]',
-                'open': float, 'high': float, 'low': float,
-                'close': float, 'volume': float
-            })
-            
-            df = calcular_indicadores(df)
-            logger.info(f"Dados coletados com sucesso: {len(df)} candles")
-            return df
-        else:
-            logger.error(f"Erro na API Binance: status_code={response.status_code}, response={response.text[:200]}")
+        # Usar coletor ao invés de Binance direto
+        from app.collector_client import get_klines
+
+        logger.info(f"Coletando dados via coletor: {symbol} {interval} limit={limit}")
+        data = get_klines(symbol, interval, limit)
+
+        if not data or len(data) == 0:
+            logger.warning(f"Nenhum dado retornado do coletor para {symbol}")
             return None
-    except requests.exceptions.Timeout as e:
-        logger.error(f"Timeout ao coletar dados da Binance: {e}")
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Erro de requisição à Binance: {e}")
-        return None
+
+        df = pd.DataFrame(data, columns=[
+            'timestamp', 'open', 'high', 'low', 'close', 'volume',
+            'close_time', 'quote_volume', 'trades', 'taker_buy_base',
+            'taker_buy_quote', 'ignore'
+        ])
+        df = df[['timestamp', 'open', 'high', 'low', 'close', 'volume']].astype({
+            'timestamp': 'datetime64[ms]',
+            'open': float, 'high': float, 'low': float,
+            'close': float, 'volume': float
+        })
+
+        df = calcular_indicadores(df)
+        logger.info(f"Dados coletados via coletor com sucesso: {len(df)} candles")
+        return df
     except Exception as e:
-        logger.error(f"Erro ao coletar dados: {e}", exc_info=True)
+        logger.error(f"Erro ao coletar dados via coletor: {e}", exc_info=True)
         return None
 
 
