@@ -15,12 +15,17 @@ from datetime import datetime, timedelta
 from flask import Flask, request, jsonify
 import requests
 
-# Redis (opcional)
+# Redis (Upstash - best effort)
 try:
     import redis
-    redis_client = redis.from_url(os.environ.get('REDIS_URL', 'redis://localhost:6379'))
-    redis_available = True
-except:
+    REDIS_URL = os.environ.get('REDIS_URL') or os.environ.get('UPSTASH_REDIS_REST_URL')
+    if REDIS_URL:
+        redis_client = redis.from_url(REDIS_URL)
+        redis_available = redis_client.ping()
+    else:
+        redis_client = None
+        redis_available = False
+except Exception:
     redis_client = None
     redis_available = False
 
@@ -49,12 +54,15 @@ def verify_hmac_signature():
         if abs((now - timestamp).total_seconds()) > 60:
             return False, "Timestamp outside window"
 
-        # Nonce anti-replay (5min)
+        # Nonce anti-replay (5min - best effort)
         nonce_key = f"nonce:{nonce}"
-        if redis_available and redis_client.exists(nonce_key):
-            return False, "Nonce already used"
-        if redis_available:
-            redis_client.setex(nonce_key, 300, "used")
+        if redis_available and redis_client:
+            try:
+                if redis_client.exists(nonce_key):
+                    return False, "Nonce already used"
+                redis_client.setex(nonce_key, 300, "used")
+            except Exception:
+                pass  # Redis down, skip anti-replay check
 
         # HMAC validation
         body = request.get_data()
@@ -84,22 +92,25 @@ def require_hmac(f):
 # ================================
 
 def get_cached_binance_data(endpoint, params=None, cache_ttl=300):
-    """Cache-first: Redis → Binance → Redis"""
+    """Cache-first: Redis → Binance → Redis (best effort)"""
     if params is None:
         params = {}
 
     # Cache key
     cache_key = f"binance:{endpoint}:{str(sorted(params.items()))}"
 
-    # 1. Try cache first
-    if redis_available:
-        cached = redis_client.get(cache_key)
-        if cached:
-            try:
-                import json as json_lib
-                return {"source": "cache", "data": json_lib.loads(cached)}
-            except:
-                pass  # Cache corrupted, fetch fresh
+    # 1. Try cache first (best effort)
+    if redis_available and redis_client:
+        try:
+            cached = redis_client.get(cache_key)
+            if cached:
+                try:
+                    import json as json_lib
+                    return {"source": "cache", "data": json_lib.loads(cached)}
+                except:
+                    pass  # Cache corrupted, fetch fresh
+        except Exception:
+            pass  # Redis down, continue without cache
 
     # 2. Fetch from Binance (with timeout)
     try:
@@ -113,12 +124,12 @@ def get_cached_binance_data(endpoint, params=None, cache_ttl=300):
         response.raise_for_status()
         data = response.json()
 
-        # 3. Cache result
-        if redis_available:
+        # 3. Cache result (best effort)
+        if redis_available and redis_client:
             try:
                 import json as json_lib
                 redis_client.setex(cache_key, cache_ttl, json_lib.dumps(data))
-            except:
+            except Exception:
                 pass  # Don't fail if cache write fails
 
         return {"source": "fresh", "data": data}
@@ -134,10 +145,23 @@ def get_cached_binance_data(endpoint, params=None, cache_ttl=300):
 
 @app.route('/health')
 def health():
+    """Health check - sempre 200 se app está rodando"""
+    return jsonify({"ok": True, "service": "sne-collector"})
+
+@app.route('/health/deps')
+def health_deps():
+    """Health check das dependências externas"""
+    redis_ok = False
+    try:
+        if redis_available and redis_client:
+            redis_ok = redis_client.ping()
+    except Exception:
+        redis_ok = False
+
     return jsonify({
         "ok": True,
         "service": "sne-collector",
-        "redis": redis_available and redis_client.ping() or False
+        "redis": redis_ok
     })
 
 @app.route('/debug/binance')
