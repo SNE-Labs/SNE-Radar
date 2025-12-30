@@ -2,6 +2,7 @@ import { useAccount, useConnect, useSignMessage, useDisconnect } from 'wagmi'
 import { SiweMessage } from 'siwe'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
+import api from '../services/api'
 
 const SIWE_DOMAIN = import.meta.env.VITE_SIWE_DOMAIN || 'radar.snelabs.space'
 const SIWE_ORIGIN = import.meta.env.VITE_SIWE_ORIGIN || 'https://radar.snelabs.space'
@@ -27,12 +28,10 @@ export function useWallet() {
     if (!address) return false
 
     try {
-      const response = await fetch('/api/auth/verify', {
-        credentials: 'include',
-      })
+      const response = await api.get('/api/auth/verify')
 
-      if (response.ok) {
-        const { tier: verifiedTier } = await response.json()
+      if (response.status === 200) {
+        const { tier: verifiedTier } = response.data
         setTier(verifiedTier || 'free')
         setIsAuthenticated(true)
         return true
@@ -53,18 +52,13 @@ export function useWallet() {
     setLoading(true)
     try {
       // 1. Obter nonce
-      const nonceRes = await fetch('/api/auth/nonce', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ address }),
-      })
+      const nonceRes = await api.post('/api/auth/nonce', { address })
 
-      if (!nonceRes.ok) {
+      if (nonceRes.status !== 200) {
         throw new Error('Failed to get nonce')
       }
 
-      const { nonce } = await nonceRes.json()
+      const { nonce } = nonceRes.data
 
       // 2. Criar mensagem SIWE
       const message = new SiweMessage({
@@ -85,22 +79,16 @@ export function useWallet() {
       const signature = await signMessageAsync({ message: messageToSign })
 
       // 4. Autenticar via backend
-      const authRes = await fetch('/api/auth/siwe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          message: messageToSign,
-          signature,
-        }),
+      const authRes = await api.post('/api/auth/siwe', {
+        message: messageToSign,
+        signature,
       })
 
-      if (!authRes.ok) {
-        const error = await authRes.json()
-        throw new Error(error.error || 'Authentication failed')
+      if (authRes.status !== 200) {
+        throw new Error(authRes.data?.error || 'Authentication failed')
       }
 
-      const { license } = await authRes.json()
+      const { license } = authRes.data
       setTier(license.tier || 'free')
       setIsAuthenticated(true)
 
@@ -121,10 +109,7 @@ export function useWallet() {
 
     // Fazer logout no backend
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      })
+      await api.post('/api/auth/logout')
     } catch (error) {
       console.error('Logout error:', error)
     }
