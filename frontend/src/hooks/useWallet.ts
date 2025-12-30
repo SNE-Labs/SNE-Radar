@@ -27,8 +27,9 @@ export function useWallet() {
         api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
         await checkAuth()
       }
-      // Depois verificar se wallet conectada precisa de autenticação
-      else if (isConnected && address && !isAuthenticated) {
+      // Só verificar wallet conectada se NÃO houver token (evitar chamadas desnecessárias)
+      else if (isConnected && address && !isAuthenticated && !savedToken) {
+        // Wallet conectada mas sem token - verificar se já está autenticado no backend
         await checkAuth()
       }
     }
@@ -68,10 +69,14 @@ export function useWallet() {
     try {
       // Verificar se há token salvo
       const savedToken = localStorage.getItem('auth_token')
-      if (savedToken) {
-        // Configurar axios com o token salvo
-        api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
+      if (!savedToken) {
+        // Sem token salvo - não está autenticado
+        setIsAuthenticated(false)
+        return false
       }
+
+      // Configurar axios com o token salvo
+      api.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`
 
       const response = await api.get('/api/auth/verify')
 
@@ -81,11 +86,17 @@ export function useWallet() {
         setIsAuthenticated(true)
         return true
       }
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      // Se falhar, limpar token inválido
-      localStorage.removeItem('auth_token')
-      delete api.defaults.headers.common['Authorization']
+    } catch (error: any) {
+      // Tratar diferentes tipos de erro adequadamente
+      if (error.response?.status === 401) {
+        // Token inválido/expirado - limpar e não logar como erro grave
+        console.log('Token inválido ou expirado - usuário não autenticado')
+        localStorage.removeItem('auth_token')
+        delete api.defaults.headers.common['Authorization']
+      } else {
+        // Outros erros (rede, servidor, etc) - logar como warning
+        console.warn('Auth check failed:', error.message)
+      }
     }
 
     setIsAuthenticated(false)
