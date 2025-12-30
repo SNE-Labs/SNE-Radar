@@ -24,8 +24,16 @@ def calcular_confluencia(mtf, fluxo, zonas, sentiment):
     validacoes = []
     
     # 1. Multi-Timeframe (peso 3)
-    if mtf and 'confluencia' in mtf:
-        mtf_score = mtf['confluencia'].get('score', 0)
+    if isinstance(mtf, dict) and 'confluencia' in mtf:
+        conf = mtf.get('confluencia', 0)
+
+        if isinstance(conf, dict):
+            mtf_score = conf.get('score', 0)
+        elif isinstance(conf, (int, float)):
+            mtf_score = conf
+        else:
+            mtf_score = 0
+
         score += (mtf_score / 10) * 3
         validacoes.append({
             'camada': 'Multi-Timeframe',
