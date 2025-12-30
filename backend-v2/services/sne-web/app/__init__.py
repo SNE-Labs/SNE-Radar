@@ -21,8 +21,10 @@ socketio = SocketIO(app, cors_allowed_origins=["https://radar.snelabs.space", "h
                    async_mode='gevent')
 
 # Register blueprints
-from . import main, api, auth_siwe
+from . import main, api, auth_siwe, dashboard_api, charts_api
 app.register_blueprint(auth_siwe.auth_bp)
+app.register_blueprint(dashboard_api.dashboard_bp)
+app.register_blueprint(charts_api.charts_bp)
 
 
 
