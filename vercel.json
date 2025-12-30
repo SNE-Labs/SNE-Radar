@@ -22,11 +22,8 @@
     }
   ],
   "env": {
-    "VITE_API_BASE_URL": "@sne-radar-api-url",
-    "VITE_WS_URL": "@sne-radar-ws-url",
-    "VITE_WALLETCONNECT_PROJECT_ID": "@walletconnect-project-id",
+    "VITE_WALLETCONNECT_PROJECT_ID": "3fcc6bba6f1de962d911bb5b5c3dba68",
     "VITE_SCROLL_RPC_URL": "https://sepolia-rpc.scroll.io",
-    "VITE_LICENSE_CONTRACT_ADDRESS": "@license-contract-address",
     "VITE_SIWE_DOMAIN": "radar.snelabs.space",
     "VITE_SIWE_ORIGIN": "https://radar.snelabs.space"
   }
