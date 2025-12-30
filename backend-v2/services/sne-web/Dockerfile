@@ -20,12 +20,12 @@ COPY . .
 # Criar diretório para logs
 RUN mkdir -p /app/logs
 
-# Expor porta
+# Expor porta (usar PORT do Railway ou 8080 como fallback)
 EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+  CMD curl -f http://localhost:$PORT/health || curl -f http://localhost:8080/health || exit 1
 
-# Comando para executar
-CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "2", "--worker-class", "gevent", "app.main:app"]
+# Comando para executar (usar PORT do Railway ou 8080 como fallback)
+CMD sh -c "gunicorn --bind 0.0.0.0:${PORT:-8080} --workers 2 --worker-class gevent app.main:app"
