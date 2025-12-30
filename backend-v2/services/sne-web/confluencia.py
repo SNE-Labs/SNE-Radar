@@ -27,6 +27,12 @@ def calcular_confluencia(mtf, fluxo, zonas, sentiment):
 
     score = 0
     validacoes = []
+
+    # Log defensivo para debug
+    logger.info(f"Confluência: mtf type={type(mtf)}, has_confluencia={'confluencia' in (mtf or {})}")
+    if isinstance(mtf, dict) and 'confluencia' in mtf:
+        conf_value = mtf['confluencia']
+        logger.info(f"Confluência value: type={type(conf_value)}, value={conf_value}")
     
     # 1. Multi-Timeframe (peso 3)
     if isinstance(mtf, dict) and 'confluencia' in mtf:

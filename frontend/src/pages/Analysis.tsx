@@ -90,51 +90,73 @@ export default function Analysis() {
         <div className="lg:col-span-2">
           {analysisResult ? (
             <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-6 space-y-6">
+              {/* Score Geral */}
               <div>
                 <div className="text-sm text-[#A6A6A6] mb-2">Score Geral</div>
-                <div className="text-5xl font-mono font-bold text-[#FF6A00]">{analysisResult.score}/100</div>
+                <div className="text-5xl font-mono font-bold text-[#FF6A00]">
+                  {safeNumber(analysisResult.analysis?.score || analysisResult.analysis?.confluence_score * 10, 0)}/100
+                </div>
               </div>
 
+              {/* Setup e Probabilidade */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-[#A6A6A6] mb-1">Setup Identificado</div>
-                  <div className="text-xl font-semibold">{analysisResult.setup}</div>
+                  <div className="text-xl font-semibold">
+                    {safeString(analysisResult.analysis?.setup || analysisResult.analysis?.bias, 'INDEFINIDO')}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm text-[#A6A6A6] mb-1">Probabilidade</div>
-                  <div className="text-xl font-semibold text-[#00C48C]">{analysisResult.probability}%</div>
+                  <div className="text-xl font-semibold text-[#00C48C]">
+                    {safeNumber(analysisResult.analysis?.probability, 0)}%
+                  </div>
                 </div>
               </div>
 
+              {/* Níveis Operacionais */}
               <div>
                 <div className="text-sm text-[#A6A6A6] mb-3">Níveis Operacionais</div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center p-3 bg-[#1B1B1F] rounded-md border border-[rgba(0,200,140,0.3)]">
                     <span className="text-sm">Entry</span>
-                    <span className="font-mono font-bold text-[#00C48C]">{formatCurrency(analysisResult.entry)}</span>
+                    <span className="font-mono font-bold text-[#00C48C]">
+                      {formatCurrency(analysisResult.analysis?.entry)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-[#1B1B1F] rounded-md border border-[rgba(255,77,79,0.3)]">
                     <span className="text-sm">Stop Loss</span>
-                    <span className="font-mono font-bold text-[#FF4D4F]">{formatCurrency(analysisResult.sl)}</span>
+                    <span className="font-mono font-bold text-[#FF4D4F]">
+                      {formatCurrency(analysisResult.analysis?.sl || analysisResult.analysis?.stop_loss)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-[#1B1B1F] rounded-md border border-[rgba(255,200,87,0.3)]">
                     <span className="text-sm">TP1</span>
-                    <span className="font-mono font-bold text-[#FFC857]">{formatCurrency(analysisResult.tp1)}</span>
+                    <span className="font-mono font-bold text-[#FFC857]">
+                      {formatCurrency(analysisResult.analysis?.tp1)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-[#1B1B1F] rounded-md border border-[rgba(255,200,87,0.3)]">
                     <span className="text-sm">TP2</span>
-                    <span className="font-mono font-bold text-[#FFC857]">{formatCurrency(analysisResult.tp2)}</span>
+                    <span className="font-mono font-bold text-[#FFC857]">
+                      {formatCurrency(analysisResult.analysis?.tp2)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-[#1B1B1F] rounded-md border border-[rgba(255,200,87,0.3)]">
                     <span className="text-sm">TP3</span>
-                    <span className="font-mono font-bold text-[#FFC857]">{formatCurrency(analysisResult.tp3)}</span>
+                    <span className="font-mono font-bold text-[#FFC857]">
+                      {formatCurrency(analysisResult.analysis?.tp3)}
+                    </span>
                   </div>
                 </div>
               </div>
 
+              {/* Risk/Reward Ratio */}
               <div>
                 <div className="text-sm text-[#A6A6A6] mb-2">Risk/Reward Ratio</div>
-                <div className="text-2xl font-mono font-bold">1:{analysisResult.riskReward}</div>
+                <div className="text-2xl font-mono font-bold">
+                  {safeString(analysisResult.analysis?.riskReward || analysisResult.analysis?.risk_reward, '1:1')}
+                </div>
               </div>
             </div>
           ) : (
