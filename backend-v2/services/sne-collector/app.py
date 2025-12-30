@@ -31,6 +31,7 @@ except Exception:
 
 # HMAC Secret
 HMAC_SECRET = os.environ.get('SNE_HMAC_SECRET', 'sne-shared-secret-change-in-prod')
+COLLECTOR_TOKEN = os.environ.get('COLLECTOR_TOKEN', 'sne-collector-token-prod')
 
 app = Flask(__name__)
 
@@ -78,12 +79,23 @@ def verify_hmac_signature():
     except Exception as e:
         return False, f"HMAC error: {str(e)}"
 
-def require_hmac(f):
-    """Decorator HMAC"""
+def require_auth(f):
+    """Decorator que aceita Bearer token OU HMAC"""
     def wrapper(*args, **kwargs):
+        # Primeiro tenta Bearer token (mais simples)
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]  # Remove "Bearer "
+            if token == COLLECTOR_TOKEN:
+                return f(*args, **kwargs)
+            else:
+                return jsonify({"error": "Invalid token"}), 401
+
+        # Se não tem Bearer, tenta HMAC (compatibilidade)
         valid, message = verify_hmac_signature()
         if not valid:
             return jsonify({"error": message}), 401
+
         return f(*args, **kwargs)
     return wrapper
 
@@ -184,7 +196,7 @@ def debug_binance():
     })
 
 @app.route('/binance/<endpoint>', methods=['GET'])
-@require_hmac
+@require_auth
 def binance_proxy(endpoint):
     """Cache-first Binance proxy"""
     # Validate endpoint

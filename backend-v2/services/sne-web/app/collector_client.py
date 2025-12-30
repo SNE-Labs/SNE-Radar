@@ -9,7 +9,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-COLLECTOR_URL = os.getenv("COLLECTOR_URL")
+# Normaliza URL (remove espaços, remove / final, adiciona https:// se faltar)
+_raw = (os.getenv("COLLECTOR_URL") or "").strip()
+if _raw and not _raw.startswith(("http://", "https://")):
+    _raw = "https://" + _raw
+COLLECTOR_URL = _raw.rstrip("/")
+
+# Token simples (mais rápido que HMAC). Defina no Render e no Railway.
+COLLECTOR_TOKEN = (os.getenv("COLLECTOR_TOKEN") or "").strip()
+
+def _headers():
+    h = {}
+    if COLLECTOR_TOKEN:
+        h["Authorization"] = f"Bearer {COLLECTOR_TOKEN}"
+    return h
 
 def get_klines(symbol: str, interval: str, limit: int = 100):
     """
@@ -22,25 +35,19 @@ def get_klines(symbol: str, interval: str, limit: int = 100):
     try:
         logger.info(f"Coletando dados via COLLECTOR_URL: {symbol} {interval} limit={limit}")
 
+        url = f"{COLLECTOR_URL}/binance/klines"
         r = requests.get(
-            f"{COLLECTOR_URL}/binance/klines",
-            params={
-                "symbol": symbol.upper(),
-                "interval": interval,
-                "limit": limit
-            },
+            url,
+            params={"symbol": symbol.upper(), "interval": interval, "limit": limit},
+            headers=_headers(),
             timeout=15,
         )
         r.raise_for_status()
 
         result = r.json()
-
-        # Verificar se há erro na resposta
-        if "error" in result:
+        if isinstance(result, dict) and "error" in result:
             raise RuntimeError(f"Collector error: {result['error']}")
-
-        # Retornar os dados (formato Binance)
-        return result["data"] if "data" in result else result
+        return result["data"] if isinstance(result, dict) and "data" in result else result
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Erro na comunicação com coletor: {str(e)}")
@@ -54,19 +61,14 @@ def get_binance_data(endpoint: str, params: dict = None):
         raise RuntimeError("COLLECTOR_URL não configurado no backend")
 
     try:
-        r = requests.get(
-            f"{COLLECTOR_URL}/binance/{endpoint}",
-            params=params or {},
-            timeout=10,
-        )
+        url = f"{COLLECTOR_URL}/binance/{endpoint.lstrip('/')}"
+        r = requests.get(url, params=params or {}, headers=_headers(), timeout=10)
         r.raise_for_status()
 
         result = r.json()
-
-        if "error" in result:
+        if isinstance(result, dict) and "error" in result:
             raise RuntimeError(f"Collector error: {result['error']}")
-
-        return result["data"] if "data" in result else result
+        return result["data"] if isinstance(result, dict) and "data" in result else result
 
     except requests.exceptions.RequestException as e:
         logger.error(f"Erro na comunicação com coletor: {str(e)}")
