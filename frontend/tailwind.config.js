@@ -7,23 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // SNE Labs Terminal Colors
+        // SNE Labs Design System Colors
+        sne: {
+          bg: '#0B0B0B',
+          'surface-1': '#111216',
+          'surface-elevated': '#1B1B1F',
+          'text-primary': '#F7F7F8',
+          'text-secondary': '#A6A6A6',
+          accent: '#FF6A00',
+          'accent-hover': '#E65A00',
+          'accent-active': '#CC5800',
+          success: '#00C48C',
+          warning: '#FFC857',
+          critical: '#FF4D4F',
+        },
+        // Legacy compatibility
         terminal: {
-          bg: '#0a0a0a',
-          fg: '#00ff00',
-          border: 'rgba(0, 255, 0, 0.3)',
-          accent: '#00ff00',
-          warning: '#ffaa00',
-          error: '#ff4444',
-          success: '#00ff88',
-          info: '#00aaff',
-          purple: '#aa00ff',
+          bg: '#0B0B0B',
+          fg: '#F7F7F8',
+          border: 'rgba(255, 255, 255, 0.1)',
+          accent: '#FF6A00',
+          warning: '#FFC857',
+          error: '#FF4D4F',
+          success: '#00C48C',
+          info: '#00C48C',
+          purple: '#FF6A00',
         },
         dark: {
-          bg: '#0a0a0a',
-          card: '#1a1a1a',
-          border: '#2a2a2a',
-          hover: '#2a2a2a',
+          bg: '#0B0B0B',
+          card: '#111216',
+          border: 'rgba(255, 255, 255, 0.1)',
+          hover: '#1B1B1F',
         }
       },
       fontFamily: {

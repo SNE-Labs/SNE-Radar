@@ -1,10 +1,10 @@
 <template>
   <button
     :class="[
-      'terminal-button',
+      'btn',
       variant,
       size,
-      { 'w-full': fullWidth }
+      { 'w-full': fullWidth, 'disabled': disabled }
     ]"
     :disabled="disabled"
     @click="$emit('click', $event)"
@@ -27,59 +27,95 @@ defineEmits<{
 </script>
 
 <style scoped>
-.terminal-button.primary {
-  border-color: var(--terminal-accent);
-  color: var(--terminal-accent);
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid transparent;
 }
 
-.terminal-button.primary:hover:not(:disabled) {
-  background: var(--terminal-accent);
-  color: var(--terminal-bg);
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
-.terminal-button.secondary {
-  border-color: var(--terminal-info);
-  color: var(--terminal-info);
+.btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.998);
 }
 
-.terminal-button.secondary:hover:not(:disabled) {
-  background: var(--terminal-info);
-  color: var(--terminal-bg);
+/* Primary */
+.btn.primary {
+  background: var(--sne-accent);
+  color: var(--sne-text-primary);
+  border-color: rgba(255, 106, 0, 0.75);
+  box-shadow: 0 6px 18px rgba(255, 106, 0, 0.12);
 }
 
-.terminal-button.danger {
-  border-color: var(--terminal-error);
-  color: var(--terminal-error);
+.btn.primary:hover:not(:disabled) {
+  background: var(--sne-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255, 106, 0, 0.2);
 }
 
-.terminal-button.danger:hover:not(:disabled) {
-  background: var(--terminal-error);
-  color: var(--terminal-bg);
+.btn.primary:active:not(:disabled) {
+  background: var(--sne-accent-active);
+  transform: translateY(0);
 }
 
-.terminal-button.success {
-  border-color: var(--terminal-success);
-  color: var(--terminal-success);
+/* Secondary */
+.btn.secondary {
+  background: var(--sne-surface-1);
+  color: var(--sne-text-primary);
+  border-color: var(--border);
 }
 
-.terminal-button.success:hover:not(:disabled) {
-  background: var(--terminal-success);
-  color: var(--terminal-bg);
+.btn.secondary:hover:not(:disabled) {
+  background: var(--sne-surface-elevated);
+  border-color: var(--sne-accent);
 }
 
-.terminal-button.sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
+/* Danger */
+.btn.danger {
+  background: var(--sne-critical);
+  color: var(--sne-text-primary);
+  border-color: rgba(255, 77, 79, 0.75);
 }
 
-.terminal-button.md {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+.btn.danger:hover:not(:disabled) {
+  background: #E64446;
+  transform: translateY(-1px);
 }
 
-.terminal-button.lg {
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
+/* Success */
+.btn.success {
+  background: var(--sne-success);
+  color: var(--sne-text-primary);
+  border-color: rgba(0, 196, 140, 0.75);
+}
+
+.btn.success:hover:not(:disabled) {
+  background: #00B07A;
+  transform: translateY(-1px);
+}
+
+/* Sizes */
+.btn.sm {
+  padding: calc(var(--spacing-1) / 2) var(--spacing-2);
+  font-size: var(--text-small);
+}
+
+.btn.md {
+  padding: calc(var(--spacing-1) / 2) var(--spacing-2);
+  font-size: var(--text-body);
+}
+
+.btn.lg {
+  padding: var(--spacing-2) var(--spacing-3);
+  font-size: var(--text-body-lg);
 }
 </style>
-
