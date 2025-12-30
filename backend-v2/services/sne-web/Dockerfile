@@ -16,6 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código da aplicação
 COPY . .
+# Garantir que wsgi.py seja copiado
+COPY wsgi.py .
 
 # Criar diretório para logs
 RUN mkdir -p /app/logs
@@ -28,4 +30,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
   CMD python -c "from app import app; print('OK')"
 
 # Comando para executar (Gunicorn produção)
-CMD ["sh", "-c", "gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:${PORT:-8080} wsgi:app"]
+CMD ["sh", "-c", "PYTHONPATH=/app gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:${PORT:-8080} wsgi:app"]
