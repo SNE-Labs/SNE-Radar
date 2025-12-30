@@ -1,14 +1,18 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import { fileURLToPath, URL } from 'node:url'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
-    }
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   server: {
     port: 5173,
@@ -16,37 +20,29 @@ export default defineConfig({
       '/api': {
         target: process.env.VITE_API_BASE_URL || 'http://localhost:5000',
         changeOrigin: true,
-        secure: false
+        secure: false,
       },
       '/socket.io': {
         target: process.env.VITE_WS_URL || 'http://localhost:5000',
         ws: true,
-        changeOrigin: true
-      }
-    }
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    sourcemap: false, // Desabilitar em produção para melhor performance
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': ['vue', 'vue-router', 'pinia'],
-          'web3': ['@wagmi/core', 'viem'],
-          'charts': ['lightweight-charts']
-        }
-      }
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
+          'web3': ['wagmi', 'viem', '@wagmi/core'],
+          'charts': ['lightweight-charts'],
+        },
+      },
     },
     target: 'esnext',
-    minify: 'esbuild', // Usa esbuild (já incluído no Vite) em vez de terser
-    // terserOptions removido - usando esbuild
+    minify: 'esbuild',
   },
-  define: {
-    // Garantir que variáveis de ambiente sejam substituídas em build time
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify(
-      process.env.VITE_API_BASE_URL || 'https://sne-radar-api-xxxxx.run.app'
-    )
-  }
 })
-
