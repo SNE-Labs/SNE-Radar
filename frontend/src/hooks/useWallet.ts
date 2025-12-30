@@ -135,11 +135,11 @@ export function useWallet() {
         throw new Error('Connector not found')
       }
 
-      await connect({ connector })
+      connect({ connector })
       toast.success('Wallet conectada!')
 
       // Após conectar, verificar se já está autenticado
-      await checkAuth()
+      // Nota: checkAuth será chamado pelo useEffect quando isConnected mudar
     } catch (error: any) {
       toast.error(error.message || 'Erro ao conectar wallet')
       throw error
