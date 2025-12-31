@@ -113,22 +113,17 @@ export function Vault() {
 
       setManualLookup(trimmed);
       appendLog(`Lookup started for ${trimmed}`);
-
-      // Salvar no localStorage quando dados chegarem
-      if (lookupQuery.data) {
-        saveLocalPublic(lookupQuery.data);
-        appendLog(`Lookup succeeded for ${trimmed}`);
-      }
     },
-    [appendLog, lookupQuery.data]
+    [appendLog]
   );
 
-  // Salvar lookup no localStorage quando dados mudarem
+  // Salvar lookup no localStorage quando dados chegarem
   useEffect(() => {
     if (lookupQuery.data && manualLookup) {
       saveLocalPublic(lookupQuery.data);
+      appendLog(`Lookup succeeded for ${manualLookup}`);
     }
-  }, [lookupQuery.data, manualLookup]);
+  }, [lookupQuery.data, manualLookup, appendLog]);
 
   // Componente para verificar licença on-chain usando hook
   function LicenseCheckButton({ nodeId, licenseId: _licenseId }: { nodeId: string; licenseId: string }) {
@@ -156,8 +151,12 @@ export function Vault() {
           appendLog(`checkAccess requested for ${nodeId}`);
         }}
         disabled={isChecking || checkQuery.isLoading}
-        className="px-3 py-1 rounded"
-        style={{ backgroundColor: 'var(--sne-surface-elevated)' }}
+        className="px-4 py-2 rounded-lg font-medium transition-all hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        style={{
+          backgroundColor: isChecking || checkQuery.isLoading ? 'var(--sne-surface-elevated)' : 'var(--sne-accent)',
+          color: isChecking || checkQuery.isLoading ? 'var(--sne-text-secondary)' : '#0B0B0B'
+        }}
+        aria-label={`Verificar acesso on-chain para ${nodeId}`}
       >
         {isChecking || checkQuery.isLoading ? 'Verificando…' : 'Verificar on-chain'}
       </button>
@@ -185,13 +184,25 @@ export function Vault() {
         </div>
 
         {/* Lookup / Search - Validador Público */}
-        <div className="mb-6 rounded border p-4" style={{ backgroundColor: 'var(--sne-surface-1)', borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2 mb-2">
-            <Search className="w-5 h-5" style={{ color: 'var(--sne-accent)' }} />
-            <h3 style={{ color: 'var(--sne-text-primary)' }}>Validador de Licenças Público</h3>
-          </div>
-          <p style={{ color: 'var(--sne-text-secondary)', marginBottom: 8 }}>
-            Cole um endereço Ethereum/Scroll ou ENS para verificar licenças públicas. Nenhuma wallet necessária.
+        <div
+          className="mb-6 rounded-xl border p-6"
+          style={{
+            backgroundColor: 'var(--bg-2)',
+            borderColor: 'var(--stroke-1)',
+            boxShadow: 'var(--shadow-1)',
+          }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className="p-2 rounded-lg"
+              style={{ backgroundColor: 'var(--bg-3)' }}
+            >
+              <Search className="w-5 h-5" style={{ color: 'var(--accent-orange)' }} />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--text-1)' }}>Validador de Licenças Público</h3>
+              <p className="text-sm" style={{ color: 'var(--text-3)' }}>
+                Cole um endereço Ethereum/Scroll ou ENS para verificar licenças públicas. Nenhuma wallet necessária.
           </p>
 
           <div className="flex gap-2 items-center">
@@ -205,8 +216,12 @@ export function Vault() {
             <button
               onClick={() => performLookup(queryAddr.trim())}
               disabled={!queryAddr.trim() || loading}
-              className="px-4 py-2 rounded"
-              style={{ backgroundColor: 'var(--sne-surface-elevated)' }}
+              className="px-4 py-2 rounded-lg font-medium transition-all hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: loading ? 'var(--sne-surface-elevated)' : 'var(--sne-accent)',
+                color: loading ? 'var(--sne-text-secondary)' : '#0B0B0B'
+              }}
+              aria-label="Verificar endereço na blockchain"
             >
               {loading ? 'Verificando…' : 'Verificar'}
             </button>
@@ -217,8 +232,13 @@ export function Vault() {
                 setManualLookup(null);
                 appendLog('Lookup cleared by user');
               }}
-              className="px-3 py-2 rounded"
-              style={{ backgroundColor: 'transparent', color: 'var(--sne-text-secondary)' }}
+              className="px-4 py-2 rounded-lg font-medium transition-all hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--sne-text-secondary)',
+                border: '1px solid var(--border)'
+              }}
+              aria-label="Limpar campo de busca e resultados"
             >
               Limpar
             </button>
@@ -235,16 +255,94 @@ export function Vault() {
         {/* Top metrics - Simplificado: só quando há lookup */}
         {lookup && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <MetricCard label="Licenças Encontradas" value={licensesCount} icon={<Shield className="w-5 h-5" />} />
-            <MetricCard label="SNE Keys" value={keysCount} icon={<Shield className="w-5 h-5" />} />
-            <MetricCard label="SNE Boxes" value={boxesCount} icon={<Shield className="w-5 h-5" />} />
+            <div
+              className="p-6 rounded-xl"
+              style={{
+                backgroundColor: 'var(--bg-2)',
+                borderWidth: '1px',
+                borderColor: 'var(--stroke-1)',
+                boxShadow: 'var(--shadow-1)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: 'var(--bg-3)' }}
+                >
+                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
+                </div>
+                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+                  Licenças
+                </span>
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
+                {licensesCount}
+              </div>
+            </div>
+
+            <div
+              className="p-6 rounded-xl"
+              style={{
+                backgroundColor: 'var(--bg-2)',
+                borderWidth: '1px',
+                borderColor: 'var(--stroke-1)',
+                boxShadow: 'var(--shadow-1)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: 'var(--bg-3)' }}
+                >
+                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
+                </div>
+                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+                  SNE Keys
+                </span>
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
+                {keysCount}
+              </div>
+            </div>
+
+            <div
+              className="p-6 rounded-xl"
+              style={{
+                backgroundColor: 'var(--bg-2)',
+                borderWidth: '1px',
+                borderColor: 'var(--stroke-1)',
+                boxShadow: 'var(--shadow-1)',
+              }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div
+                  className="p-2 rounded-lg"
+                  style={{ backgroundColor: 'var(--bg-3)' }}
+                >
+                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
+                </div>
+                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
+                  SNE Boxes
+                </span>
+              </div>
+              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
+                {boxesCount}
+              </div>
+            </div>
           </div>
         )}
 
         {/* Licenses (full width now that heatmap removed) */}
-        <div className="rounded border p-6 mb-8" style={{ backgroundColor: 'var(--sne-surface-1)', borderColor: 'var(--border)' }}>
-          <h3 style={{ color: 'var(--sne-text-primary)', marginBottom: 8 }}>Licenças públicas</h3>
-          <p style={{ color: 'var(--sne-text-secondary)', marginBottom: 12 }}>
+        <div
+          className="rounded-xl border p-6 mb-8"
+          style={{
+            backgroundColor: 'var(--bg-2)',
+            borderColor: 'var(--stroke-1)',
+            boxShadow: 'var(--shadow-1)',
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-1)' }}>Licenças públicas</h3>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-3)' }}>
             Licenças atreladas ao endereço/ENS inserido. Clique em "Verificar on-chain" para confirmar via Scroll L2 (requer backend).
           </p>
 
@@ -255,7 +353,15 @@ export function Vault() {
           ) : (
             <div className="space-y-3">
               {lookup.licenses.map((lic) => (
-                <div key={lic.id} className="p-4 rounded border flex items-center justify-between" style={{ backgroundColor: 'var(--sne-bg)', borderColor: 'var(--border)' }}>
+                <div
+                  key={lic.id}
+                  className="p-4 rounded-lg border flex items-center justify-between transition-all hover:shadow-md"
+                  style={{
+                    backgroundColor: 'var(--bg-3)',
+                    borderColor: 'var(--stroke-1)',
+                    boxShadow: 'var(--shadow-0)',
+                  }}
+                >
                   <div>
                     <div style={{ fontWeight: 600, color: 'var(--sne-text-primary)' }}>{lic.name ?? lic.id}</div>
                     <div style={{ color: 'var(--sne-text-secondary)', fontSize: '0.9rem' }}>
@@ -271,10 +377,19 @@ export function Vault() {
 
                     <a
                       href={`/licenses/${encodeURIComponent(lic.id)}`}
-                      className="px-3 py-1 rounded"
-                      style={{ backgroundColor: 'transparent', color: 'var(--sne-text-secondary)', border: '1px solid var(--border)' }}
+                      className="px-4 py-2 rounded-lg font-medium transition-all hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 inline-flex items-center gap-2"
+                      style={{
+                        backgroundColor: 'transparent',
+                        color: 'var(--sne-text-secondary)',
+                        border: '1px solid var(--border)',
+                        textDecoration: 'none'
+                      }}
+                      aria-label={`Ver detalhes da licença ${lic.name || lic.id}`}
                     >
                       Detalhes
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4.5 2L7.5 6L4.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                     </a>
                   </div>
                 </div>
@@ -284,9 +399,16 @@ export function Vault() {
         </div>
 
         {/* Products - Seção Principal de Compras */}
-        <div className="rounded border p-6 mb-8" style={{ backgroundColor: 'var(--sne-surface-1)', borderColor: 'var(--border)' }}>
-          <h3 style={{ color: 'var(--sne-text-primary)', marginBottom: 8 }}>Comprar Produtos</h3>
-          <p style={{ color: 'var(--sne-text-secondary)', marginBottom: 12 }}>
+        <div
+          className="rounded-xl border p-6 mb-8"
+          style={{
+            backgroundColor: 'var(--bg-2)',
+            borderColor: 'var(--stroke-1)',
+            boxShadow: 'var(--shadow-1)',
+          }}
+        >
+          <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-1)' }}>Comprar Produtos</h3>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-3)' }}>
             Adquira SNE Box, SNE Keys e Licenças. Conecte sua wallet para realizar a compra.
           </p>
             {products.length > 0 ? (
@@ -312,9 +434,16 @@ export function Vault() {
           </div>
 
         {/* Audit / Activity (local-only) */}
-        <div className="rounded border p-6" style={{ backgroundColor: 'var(--sne-surface-1)', borderColor: 'var(--border)' }}>
-          <h4 style={{ color: 'var(--sne-text-primary)' }}>Histórico (local)</h4>
-          <p style={{ color: 'var(--sne-text-secondary)', marginBottom: 8 }}>Entradas locais de auditoria (buscas / verificações) — armazenado no seu navegador.</p>
+        <div
+          className="rounded-xl border p-6"
+          style={{
+            backgroundColor: 'var(--bg-2)',
+            borderColor: 'var(--stroke-1)',
+            boxShadow: 'var(--shadow-1)',
+          }}
+        >
+          <h4 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-1)' }}>Histórico (local)</h4>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-3)' }}>Entradas locais de auditoria (buscas / verificações) — armazenado no seu navegador.</p>
           <div className="space-y-2 max-h-48 overflow-auto">
             {logs.map((l, idx) => (
               <div key={idx} style={{ color: 'var(--sne-text-secondary)', fontSize: '0.9rem' }}>
