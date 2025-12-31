@@ -1,9 +1,12 @@
-import { Activity, Server, Zap, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { Activity, Server, Zap, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { RightPanel } from '../components/RightPanel';
 import { apiGet } from '@/lib/api/http';
 
 export function Home() {
+  const [showAllActivities, setShowAllActivities] = useState(false);
+
   // Fetch dashboard data from API
   const { data: dashboardData, isLoading, error } = useQuery({
     queryKey: ['dashboard'],
@@ -175,7 +178,11 @@ export function Home() {
             <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-2)' }}>
               Recent Activity
             </h3>
-            <button className="text-xs" style={{ color: 'var(--accent-orange)' }}>
+            <button
+              onClick={() => setShowAllActivities(true)}
+              className="text-xs hover:opacity-80 transition-opacity"
+              style={{ color: 'var(--accent-orange)' }}
+            >
               View All
             </button>
           </div>
@@ -242,6 +249,81 @@ export function Home() {
           { label: 'Report Issue', icon: 'AlertCircle' },
         ]}
       />
+
+      {/* All Activities Modal */}
+      {showAllActivities && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowAllActivities(false)}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative max-w-4xl w-full mx-4 max-h-[80vh] overflow-hidden rounded-lg"
+            style={{ backgroundColor: 'var(--bg-1)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--stroke-1)' }}>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--text-1)' }}>
+                All Recent Activities
+              </h2>
+              <button
+                onClick={() => setShowAllActivities(false)}
+                className="p-2 rounded-lg hover:bg-[var(--bg-2)] transition-colors"
+              >
+                <X size={20} style={{ color: 'var(--text-2)' }} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {dashboardData?.activities && dashboardData.activities.length > 0 ? (
+                <div className="space-y-4">
+                  {dashboardData.activities.map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-4 rounded-lg"
+                      style={{ backgroundColor: 'var(--bg-2)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full ${
+                          item.status === 'success' ? 'bg-green-500' :
+                          item.status === 'error' ? 'bg-red-500' :
+                          'bg-yellow-500'
+                        }`} />
+                        <div>
+                          <p className="font-medium" style={{ color: 'var(--text-1)' }}>
+                            {item.event}
+                          </p>
+                          <p className="text-sm" style={{ color: 'var(--text-3)' }}>
+                            {item.component}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium" style={{ color: 'var(--text-2)' }}>
+                          {item.time}
+                        </p>
+                        <p className="text-xs" style={{ color: 'var(--text-3)' }}>
+                          {new Date(item.timestamp).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Activity size={48} className="mx-auto mb-4" style={{ color: 'var(--text-3)' }} />
+                  <p style={{ color: 'var(--text-2)' }}>No recent activities found</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

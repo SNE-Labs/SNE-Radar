@@ -1,6 +1,6 @@
-// In production: direct to https://snelabs.space
+// In production: use relative paths (Vercel proxy handles /api/* → backend)
 // In development: Vite proxy handles /api/* → localhost:5000
-export const API_BASE = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_BASE ?? "https://snelabs.space");
+export const API_BASE = "";
 
 export async function apiGet<T>(path: string): Promise<T> {
   try {

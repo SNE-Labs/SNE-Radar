@@ -1,6 +1,15 @@
-import { Check, X } from 'lucide-react';
+import { Check, X, ShoppingCart, CreditCard } from 'lucide-react';
+import { useState } from 'react';
 
 export function Pricing() {
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+
+  const handleChoosePlan = (tier: any) => {
+    setSelectedPlan(tier);
+    setShowCheckout(true);
+  };
+
   const tiers = [
     {
       name: 'Free',
@@ -99,7 +108,8 @@ export function Pricing() {
               </div>
 
               <button
-                className="w-full px-4 py-3 rounded-lg text-sm font-medium mb-6 transition-all"
+                onClick={() => handleChoosePlan(tier)}
+                className="w-full px-4 py-3 rounded-lg text-sm font-medium mb-6 transition-all hover:opacity-90"
                 style={{
                   backgroundColor: tier.highlighted ? 'var(--accent-orange)' : 'var(--bg-3)',
                   color: tier.highlighted ? '#FFFFFF' : 'var(--text-1)',
@@ -151,6 +161,98 @@ export function Pricing() {
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {showCheckout && selectedPlan && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowCheckout(false)}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md mx-4 rounded-lg"
+            style={{ backgroundColor: 'var(--bg-1)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--stroke-1)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-orange)' }}>
+                  <ShoppingCart size={20} style={{ color: '#FFFFFF' }} />
+                </div>
+                <h2 className="text-xl font-semibold" style={{ color: 'var(--text-1)' }}>Checkout</h2>
+              </div>
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="p-2 rounded-lg hover:bg-[var(--bg-2)] transition-colors"
+              >
+                <X size={20} style={{ color: 'var(--text-2)' }} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Plan Summary */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-2" style={{ color: 'var(--text-1)' }}>Plan Summary</h3>
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium" style={{ color: 'var(--text-1)' }}>{selectedPlan.name} Plan</span>
+                    <span className="text-lg font-bold" style={{ color: 'var(--accent-orange)' }}>{selectedPlan.price}</span>
+                  </div>
+                  <p className="text-sm" style={{ color: 'var(--text-3)' }}>{selectedPlan.description}</p>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>{selectedPlan.period}</p>
+                </div>
+              </div>
+
+              {/* Payment Options */}
+              <div className="mb-6">
+                <h3 className="font-medium mb-3" style={{ color: 'var(--text-1)' }}>Payment Method</h3>
+                <div className="space-y-2">
+                  <button className="w-full p-3 rounded-lg border flex items-center gap-3 hover:bg-[var(--bg-2)] transition-colors"
+                          style={{ borderColor: 'var(--stroke-1)', backgroundColor: 'var(--bg-2)' }}>
+                    <CreditCard size={18} style={{ color: 'var(--text-2)' }} />
+                    <span style={{ color: 'var(--text-1)' }}>Credit Card</span>
+                  </button>
+                  <button className="w-full p-3 rounded-lg border flex items-center gap-3 hover:bg-[var(--bg-2)] transition-colors"
+                          style={{ borderColor: 'var(--stroke-1)', backgroundColor: 'var(--bg-2)' }}>
+                    <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--accent-orange)' }} />
+                    <span style={{ color: 'var(--text-1)' }}>Cryptocurrency</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCheckout(false)}
+                  className="flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-colors hover:bg-[var(--bg-2)]"
+                  style={{ backgroundColor: 'var(--bg-3)', color: 'var(--text-2)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    alert(`Thank you for choosing ${selectedPlan.name}! Payment integration coming soon.`);
+                    setShowCheckout(false);
+                  }}
+                  className="flex-1 px-4 py-3 rounded-lg text-sm font-medium transition-all hover:opacity-90"
+                  style={{ backgroundColor: 'var(--accent-orange)', color: '#FFFFFF' }}
+                >
+                  Complete Purchase
+                </button>
+              </div>
+
+              <p className="text-xs text-center mt-4" style={{ color: 'var(--text-3)' }}>
+                By completing your purchase, you agree to our Terms of Service
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

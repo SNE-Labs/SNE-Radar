@@ -1,4 +1,5 @@
-import { TrendingUp, TrendingDown, Eye, Lock, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Eye, Lock, RefreshCw, X, BarChart3, DollarSign, Activity, Clock } from 'lucide-react';
+import { useState } from 'react';
 import { RightPanel } from '../components/RightPanel';
 import { useMarketSummary, useSignals } from '../../hooks/useRadarData';
 import { useEntitlements } from '../../lib/auth/useEntitlements';
@@ -8,6 +9,8 @@ interface RadarProps {
 }
 
 export function Radar({ isWalletConnected }: RadarProps) {
+  const [showAssetDetails, setShowAssetDetails] = useState(false);
+
   // Dados reais das APIs
   const { data: marketData, isLoading: marketLoading, refetch: refetchMarket } = useMarketSummary();
   const { data: signalsData, isLoading: signalsLoading, refetch: refetchSignals } = useSignals('BTC/USD', '4H', isWalletConnected);
@@ -103,16 +106,26 @@ export function Radar({ isWalletConnected }: RadarProps) {
             </div>
             <div className="flex items-center gap-2">
               <button
-                className="px-4 py-2 rounded-lg text-sm font-medium"
+                onClick={() => setShowAssetDetails(true)}
+                className="px-4 py-2 rounded-lg text-sm font-medium hover:opacity-80 transition-opacity"
                 style={{ backgroundColor: 'var(--bg-3)', color: 'var(--text-1)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
               >
                 <Eye size={16} className="inline mr-2" />
                 View
               </button>
               <button
-                className="px-4 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed"
-                style={{ backgroundColor: 'var(--bg-3)', color: 'var(--text-3)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+                onClick={() => {
+                  if (hasAccess) {
+                    alert('Trading interface coming soon! This feature will be available in the next update.');
+                  } else {
+                    alert('Upgrade to Pro tier to access trading features.');
+                  }
+                }}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-opacity ${
+                  hasAccess ? 'hover:opacity-80 cursor-pointer' : 'opacity-50 cursor-not-allowed'
+                }`}
                 disabled={!hasAccess}
+                style={{ backgroundColor: 'var(--bg-3)', color: hasAccess ? 'var(--text-1)' : 'var(--text-3)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
               >
                 <Lock size={16} className="inline mr-2" />
                 Trade
@@ -255,6 +268,128 @@ export function Radar({ isWalletConnected }: RadarProps) {
           { label: 'View Docs', icon: 'FileText' },
         ]}
       />
+
+      {/* Asset Details Modal */}
+      {showAssetDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={() => setShowAssetDetails(false)}
+          />
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-2xl mx-4 rounded-lg"
+            style={{ backgroundColor: 'var(--bg-1)', borderWidth: '1px', borderColor: 'var(--stroke-1)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b" style={{ borderColor: 'var(--stroke-1)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--accent-orange)' }}>
+                  <DollarSign size={20} style={{ color: '#FFFFFF' }} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold" style={{ color: 'var(--text-1)' }}>BTC/USD Details</h2>
+                  <p className="text-sm" style={{ color: 'var(--text-3)' }}>Bitcoin vs US Dollar</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAssetDetails(false)}
+                className="p-2 rounded-lg hover:bg-[var(--bg-2)] transition-colors"
+              >
+                <X size={20} style={{ color: 'var(--text-2)' }} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="p-4 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <DollarSign size={20} className="mx-auto mb-2" style={{ color: 'var(--accent-orange)' }} />
+                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Price</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text-1)' }}>
+                    ${marketData?.price || '43,250'}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <TrendingUp size={20} className="mx-auto mb-2" style={{ color: 'var(--ok-green)' }} />
+                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>24h Change</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--ok-green)' }}>
+                    +{marketData?.change24h || '2.4'}%
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <BarChart3 size={20} className="mx-auto mb-2" style={{ color: 'var(--text-2)' }} />
+                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Volume</p>
+                  <p className="text-lg font-semibold" style={{ color: 'var(--text-1)' }}>
+                    ${marketData?.volume || '28.5B'}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-lg text-center" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <Activity size={20} className="mx-auto mb-2" style={{ color: 'var(--text-2)' }} />
+                  <p className="text-xs uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>Signal</p>
+                  <p className="text-lg font-semibold" style={{ color: watchlist[0]?.signal === 'BUY' ? 'var(--ok-green)' : watchlist[0]?.signal === 'SELL' ? 'var(--danger-red)' : 'var(--text-2)' }}>
+                    {watchlist[0]?.signal || 'HOLD'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Additional Info */}
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <h3 className="font-medium mb-2" style={{ color: 'var(--text-1)' }}>Market Information</h3>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span style={{ color: 'var(--text-3)' }}>Market Cap:</span>
+                      <span style={{ color: 'var(--text-1)' }} className="ml-2 font-medium">$850B</span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-3)' }}>24h High:</span>
+                      <span style={{ color: 'var(--text-1)' }} className="ml-2 font-medium">${marketData?.high24h || '44,200'}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-3)' }}>24h Low:</span>
+                      <span style={{ color: 'var(--text-1)' }} className="ml-2 font-medium">${marketData?.low24h || '42,100'}</span>
+                    </div>
+                    <div>
+                      <span style={{ color: 'var(--text-3)' }}>Last Update:</span>
+                      <span style={{ color: 'var(--text-1)' }} className="ml-2 font-medium">
+                        <Clock size={12} className="inline mr-1" />
+                        {new Date().toLocaleTimeString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-2)' }}>
+                  <h3 className="font-medium mb-2" style={{ color: 'var(--text-1)' }}>Trading Signal Details</h3>
+                  <div className="text-sm">
+                    <p style={{ color: 'var(--text-2)' }}>
+                      Current signal strength: <span className="font-medium" style={{ color: 'var(--text-1)' }}>
+                        {watchlist[0]?.strength || 'Medium'}
+                      </span>
+                    </p>
+                    <p style={{ color: 'var(--text-2)' }}>
+                      Timeframe: <span className="font-medium" style={{ color: 'var(--text-1)' }}>
+                        {watchlist[0]?.timeframe || '4H'}
+                      </span>
+                    </p>
+                    <p style={{ color: 'var(--text-3)' }} className="mt-2">
+                      {hasAccess ? 'Real-time analysis available' : 'Connect wallet for live signals'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
