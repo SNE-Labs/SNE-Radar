@@ -2,6 +2,8 @@
 // In development: Vite proxy handles /api/* → localhost:5000
 export const API_BASE = import.meta.env.DEV ? "" : (import.meta.env.VITE_API_BASE ?? "https://snelabs.space");
 
+console.log("API_BASE configured as:", API_BASE);
+
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: "GET",

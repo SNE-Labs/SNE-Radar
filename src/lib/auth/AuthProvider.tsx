@@ -65,9 +65,11 @@ Nonce: ${opts.nonce}`;
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  console.log("AuthProvider: Initializing");
   const [address, setAddress] = useState<string | undefined>();
 
   async function connect() {
+    console.log("AuthProvider: Connecting wallet");
     const addr = await requestAddress();
     const { nonce } = await getNonce();
 
