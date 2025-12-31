@@ -541,30 +541,17 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
   }, [sidebarOpen]);
 
   return (
-    <div className="flex min-h-screen">
-      {/* Desktop Sidebar */}
-      <aside
-        className="hidden md:block md:fixed md:left-0 md:top-16 md:bottom-0 md:w-64 md:overflow-y-auto md:border-r"
-        style={{
-          backgroundColor: "var(--bg-2)",
-          borderColor: "var(--stroke-1)",
-        }}
-        aria-hidden={sidebarOpen ? "true" : "false"}
-      >
-        <div className="p-6">
-          <DocsSidebar
-            sections={sections}
-            selectedDoc={selectedDoc}
-            onSelect={(id: string) => {
-              setSelectedDoc(id);
-            }}
-          />
-        </div>
-      </aside>
-
-      {/* Mobile Drawer */}
-      {sidebarOpen && (
-        <MobileDrawer onClose={() => setSidebarOpen(false)}>
+    <div className="flex flex-1">
+      {/* Main Content */}
+      <div className="flex-1 flex">
+        {/* Desktop Docs Sidebar - Internal to content area */}
+        <aside
+          className="hidden lg:block w-80 border-r overflow-y-auto"
+          style={{
+            backgroundColor: "var(--bg-2)",
+            borderColor: "var(--stroke-1)",
+          }}
+        >
           <div className="p-6">
             <DocsSidebar
               sections={sections}
@@ -572,35 +559,49 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
               onSelect={(id: string) => {
                 setSelectedDoc(id);
               }}
-              closeOnSelect={() => setSidebarOpen(false)}
-              showHeader
             />
           </div>
-        </MobileDrawer>
-      )}
+        </aside>
 
-      {/* Main Content */}
-      <main
-        ref={mainRef}
-        className="flex-1 ml-0 md:ml-64 py-12 px-4 sm:px-8 lg:px-24"
-      >
-        <div className="max-w-4xl mx-auto">
-          {/* Mobile toggle button */}
-          <div className="mb-6 md:hidden">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded"
-              aria-label="Abrir índice"
-              style={{
-                backgroundColor: "var(--bg-2)",
-                color: "var(--text-1)",
-                border: "1px solid var(--stroke-1)",
-              }}
-            >
-              <Search className="w-4 h-4" />
-              Índice
-            </button>
-          </div>
+        {/* Mobile Drawer */}
+        {sidebarOpen && (
+          <MobileDrawer onClose={() => setSidebarOpen(false)}>
+            <div className="p-6">
+              <DocsSidebar
+                sections={sections}
+                selectedDoc={selectedDoc}
+                onSelect={(id: string) => {
+                  setSelectedDoc(id);
+                }}
+                closeOnSelect={() => setSidebarOpen(false)}
+                showHeader
+              />
+            </div>
+          </MobileDrawer>
+        )}
+
+        {/* Main Content */}
+        <main
+          ref={mainRef}
+          className="flex-1 py-8 px-4 sm:px-6 lg:px-8 overflow-y-auto"
+        >
+          <div className="max-w-4xl mx-auto">
+            {/* Mobile toggle button - Show on all screens smaller than lg */}
+            <div className="mb-6 lg:hidden">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded"
+                aria-label="Abrir índice de documentação"
+                style={{
+                  backgroundColor: "var(--bg-2)",
+                  color: "var(--text-1)",
+                  border: "1px solid var(--stroke-1)",
+                }}
+              >
+                <Search className="w-4 h-4" />
+                Índice da Documentação
+              </button>
+            </div>
 
           {/* Header */}
           <div className="mb-8">
