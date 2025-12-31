@@ -728,4 +728,53 @@ import { formatScore } from '@/utils/scoreDisplay'
 
 **Base técnica sólida para funcionalidades avançadas!** 🚀
 
+---
+
+## 🏗️ **REFATORAÇÃO DE SERVIÇOS - ORGANIZAÇÃO POR DOMÍNIO**
+
+### ✅ **Estrutura Anterior:**
+```
+services/
+├── api.ts (configuração base + todos os endpoints)
+```
+
+### ✅ **Nova Estrutura Limpa:**
+```
+services/
+├── index.ts          # Barrel exports
+├── api.ts            # Configuração base (Axios + interceptors)
+├── auth.ts           # Autenticação/Wallet
+├── analysis.ts       # Análise Técnica
+├── chart.ts          # Dados de Gráfico
+├── dashboard.ts      # Dashboard/Métricas
+├── market.ts         # Dados de Mercado
+└── system.ts         # Sistema/Health
+```
+
+### 🎯 **Benefícios da Nova Organização:**
+
+- **Separação clara por domínio** - responsabilidades bem definidas
+- **Manutenibilidade** - cada arquivo foca em um contexto específico
+- **Imports limpos** - `import { analysisApi } from '../services'`
+- **Barrel exports** - export centralizado e consistente
+- **Type safety** - interfaces específicas por domínio
+
+### 📊 **Arquivos Criados:**
+- `services/dashboard.ts` - Dashboard/Métricas APIs
+- `services/analysis.ts` - Análise Técnica APIs
+- `services/chart.ts` - Dados de Gráfico APIs
+- `services/market.ts` - Dados de Mercado APIs
+- `services/system.ts` - Sistema/Health APIs
+- `services/auth.ts` - Autenticação/Wallet APIs
+- `services/index.ts` - Barrel exports centralizados
+
+### 🔄 **Imports Atualizados:**
+- ✅ `hooks/useMarketData.ts`
+- ✅ `hooks/useChartData.ts`
+- ✅ `components/Chart.tsx`
+- ✅ `pages/Dashboard.tsx`
+- ✅ `hooks/useWallet.ts`
+
+**Estrutura de serviços completamente refatorada! 🏗️**
+
 **Este plano v2.2 evoluiu para implementação real com sucesso total! ✅**
