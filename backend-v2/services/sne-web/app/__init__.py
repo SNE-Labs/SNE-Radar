@@ -76,6 +76,11 @@ def root():
     logger.info("Root endpoint called")
     return jsonify({'message': 'SNE Web API is running', 'status': 'ok'}), 200
 
+# Health check route (no dependencies)
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'ok', 'service': 'sne-web', 'version': '1.0'}), 200
+
 # Database initialization endpoint (manual)
 @app.route('/init-db', methods=['POST'])
 def init_database():
