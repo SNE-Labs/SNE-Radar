@@ -4,7 +4,7 @@
 // ============================================
 
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react'
-import { cn } from '../lib/utils'
+import { cn, safeToFixed } from '../lib/utils'
 
 const CheckCircleIcon = CheckCircle
 const XCircleIcon = XCircle
@@ -87,7 +87,7 @@ export function ConfluenceGrid({
                 'bg-[#FF4D4F]/20 text-[#FF4D4F] border border-[#FF4D4F]/30': score < 25
               }
             )}>
-              {score.toFixed(0)}/100
+              {safeToFixed(score, 0)}/100
             </span>
           </div>
         </div>

@@ -8,6 +8,7 @@ import { useWallet } from '../hooks/useWallet'
 import { useUIStore } from '../stores/ui'
 import { useChartData } from '../hooks/useChartData'
 import { Card } from '../app/components/Card'
+import { safeToFixed } from '../lib/utils'
 import { InteractiveChart } from '../components/InteractiveChart'
 import { cn, safeNumber } from '../lib/utils'
 
@@ -118,7 +119,7 @@ export default function ChartPage() {
           ) : (
             <div className="text-2xl font-mono font-bold text-white">
               {chartData?.candles
-                ? (chartData.candles.reduce((sum, c) => sum + (c.volume || 0), 0) / 1e6).toFixed(1) + 'M'
+                ? safeToFixed((chartData.candles.reduce((sum, c) => sum + (c.volume || 0), 0) / 1e6), 1) + 'M'
                 : '--'
               }
             </div>

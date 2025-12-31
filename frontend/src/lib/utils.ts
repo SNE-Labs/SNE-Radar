@@ -40,6 +40,12 @@ export function formatPercent(value: any, decimals: number = 0): string {
   return `${n.toFixed(decimals)}%`;
 }
 
+export function safeToFixed(value: any, decimals: number = 2, fallback: string = '-'): string {
+  const num = safeNumber(value, NaN)
+  if (Number.isNaN(num)) return fallback
+  return num.toFixed(decimals)
+}
+
 export function shortenAddress(address: string): string {
   if (!address) return ''
   return `${address.slice(0, 6)}...${address.slice(-4)}`

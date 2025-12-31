@@ -6,6 +6,7 @@
 import { useEffect, useRef } from 'react'
 import type { IMarkerData } from 'lightweight-charts'
 import { adaptPriceToLightweight } from '../../lib/chartAdapter'
+import { safeToFixed } from '../../lib/utils'
 import type { ChartOverlaysProps } from '../../types/chart'
 
 export function ChartOverlays({
@@ -153,7 +154,7 @@ export function ChartOverlays({
           lineWidth: 2,
           lineStyle: 1, // Dashed
           axisLabelVisible: true,
-          title: `ENTRY: $${analysisData.entryPrice.toFixed(2)}`
+          title: `ENTRY: $${safeToFixed(analysisData.entryPrice, 2)}`
         })
         overlays.push(entryLine)
       } catch (error) {

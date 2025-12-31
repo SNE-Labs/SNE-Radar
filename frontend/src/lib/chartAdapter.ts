@@ -6,6 +6,7 @@
 import type { Time } from 'lightweight-charts'
 import type { CandleData, LevelsData } from '../types/analysis'
 import type { LightweightCandle, LightweightLevel, ChartAdapter } from '../types/chart'
+import { safeToFixed } from './utils'
 
 // ============================================
 // CANDLE DATA CONVERSION
@@ -107,7 +108,7 @@ export const adaptPriceToLightweight = (price: number): LightweightLevel => ({
   lineWidth: 1,
   lineStyle: 2, // Dashed
   axisLabelVisible: true,
-  title: `$${price.toFixed(2)}`
+  title: `$${safeToFixed(price, 2)}`
 })
 
 // ============================================

@@ -13,6 +13,7 @@ import { ChartOverlays } from './chart/ChartOverlays'
 import { Card } from '../app/components/Card'
 import { Button } from '../app/components/Button'
 import { logger } from '../lib/logger'
+import { safeToFixed } from '../lib/utils'
 import type { ChartConfig } from '../types/chart'
 
 const chartLogger = logger.child('InteractiveChart')
@@ -215,7 +216,7 @@ export function InteractiveChart({
             {currentPriceData && (
               <div className="text-sm text-white/70">
                 Atual: <span className="text-[#00C48C] font-mono">
-                  ${currentPriceData.price.toFixed(2)}
+                  ${safeToFixed(currentPriceData.price, 2)}
                 </span>
               </div>
             )}
