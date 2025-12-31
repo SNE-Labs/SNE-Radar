@@ -5,13 +5,13 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, children }: StatusBadgeProps) {
   const colors = {
-    active: 'var(--sne-success)',
-    success: 'var(--sne-success)',
-    violated: 'var(--sne-critical)',
-    critical: 'var(--sne-critical)',
-    pending: 'var(--sne-warning)',
-    warning: 'var(--sne-warning)',
-    offline: 'var(--sne-text-secondary)',
+    active: 'var(--ok-green)',
+    success: 'var(--ok-green)',
+    violated: 'var(--error-red)',
+    critical: 'var(--error-red)',
+    pending: 'var(--warn-amber)',
+    warning: 'var(--warn-amber)',
+    offline: 'var(--text-3)',
   };
 
   return (
