@@ -40,10 +40,19 @@ export default defineConfig({
     sourcemap: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor': ['react', 'react-dom', 'react-router-dom'],
-          'web3': ['wagmi', 'viem', '@wagmi/core'],
-          'charts': ['lightweight-charts'],
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              return 'vendor'
+            }
+            if (id.includes('wagmi') || id.includes('viem') || id.includes('@wagmi')) {
+              return 'web3'
+            }
+            if (id.includes('lightweight-charts')) {
+              return 'charts'
+            }
+            return 'vendor'
+          }
         },
       },
     },
