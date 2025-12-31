@@ -100,12 +100,19 @@ export function CheckoutModal({ product, open, onOpenChange }: CheckoutModalProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" style={{ backgroundColor: 'var(--sne-surface-1)', borderColor: 'var(--border)' }}>
+      <DialogContent
+        className="max-w-md"
+        style={{
+          backgroundColor: 'var(--bg-1)',
+          borderColor: 'var(--stroke-1)',
+          boxShadow: 'var(--shadow-2)',
+        }}
+      >
         <DialogHeader>
-          <DialogTitle style={{ color: 'var(--sne-text-primary)' }}>
+          <DialogTitle className="text-lg font-semibold" style={{ color: 'var(--text-1)' }}>
             Confirmar Compra
           </DialogTitle>
-          <DialogDescription style={{ color: 'var(--sne-text-secondary)' }}>
+          <DialogDescription className="text-sm" style={{ color: 'var(--text-3)' }}>
             Revise os detalhes antes de confirmar
           </DialogDescription>
         </DialogHeader>
@@ -241,22 +248,30 @@ export function CheckoutModal({ product, open, onOpenChange }: CheckoutModalProp
           )}
         </div>
 
-        <DialogFooter className="flex-col sm:flex-row gap-2">
-          <Button
-            variant="outline"
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+          <button
             onClick={() => onOpenChange(false)}
             disabled={isProcessing}
+            className="flex-1 px-4 py-3 rounded-lg font-medium transition-all hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{
+              backgroundColor: 'transparent',
+              color: 'var(--sne-text-secondary)',
+              border: '1px solid var(--border)'
+            }}
+            aria-label="Cancelar compra"
           >
             Cancelar
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={handleConfirmPurchase}
             disabled={!isConnected || !hasEnoughBalance || isProcessing || !!txHash}
-            className="flex items-center gap-2"
+            className="flex-1 px-4 py-3 rounded-lg font-medium transition-all hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{
-              backgroundColor: hasEnoughBalance && !txHash ? 'var(--sne-accent)' : 'var(--sne-surface-elevated)',
-              color: hasEnoughBalance && !txHash ? '#0B0B0B' : 'var(--sne-text-secondary)',
+              backgroundColor: hasEnoughBalance && !txHash ? 'var(--accent-orange)' : 'var(--sne-surface-elevated)',
+              color: hasEnoughBalance && !txHash ? '#FFFFFF' : 'var(--sne-text-secondary)',
+              border: 'none'
             }}
+            aria-label={isProcessing ? 'Processando compra' : txHash ? 'Compra concluída' : 'Confirmar compra'}
           >
             {isProcessing ? (
               <>
@@ -271,8 +286,8 @@ export function CheckoutModal({ product, open, onOpenChange }: CheckoutModalProp
             ) : (
               'Confirmar Compra'
             )}
-          </Button>
-        </DialogFooter>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

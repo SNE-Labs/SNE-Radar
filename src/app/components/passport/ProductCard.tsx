@@ -16,7 +16,14 @@ export function ProductCard({ product, onPurchase }: ProductCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="rounded border p-4" style={{ backgroundColor: 'var(--sne-bg)', borderColor: 'var(--border)' }}>
+    <div
+      className="rounded-xl border p-6 transition-all hover:shadow-md"
+      style={{
+        backgroundColor: 'var(--bg-2)',
+        borderColor: 'var(--stroke-1)',
+        boxShadow: 'var(--shadow-0)',
+      }}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -116,19 +123,21 @@ export function ProductCard({ product, onPurchase }: ProductCardProps) {
       )}
 
       {/* Botão de compra */}
-      <div className="mt-3 flex items-center gap-2">
-        <Button
+      <div className="mt-4">
+        <button
           onClick={() => onPurchase(product)}
           disabled={!product.available}
-          className="flex-1 flex items-center justify-center gap-2"
+          className="w-full px-4 py-3 rounded-lg font-medium transition-all hover:opacity-90 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           style={{
-            backgroundColor: product.available ? 'var(--sne-accent)' : 'var(--sne-surface-elevated)',
-            color: product.available ? '#0B0B0B' : 'var(--sne-text-secondary)',
+            backgroundColor: product.available ? 'var(--accent-orange)' : 'var(--sne-surface-elevated)',
+            color: product.available ? '#FFFFFF' : 'var(--sne-text-secondary)',
+            border: 'none'
           }}
+          aria-label={product.available ? `Comprar ${product.title}` : `${product.title} indisponível`}
         >
           <ShoppingCart className="w-4 h-4" />
           {product.available ? 'Comprar Agora' : 'Indisponível'}
-        </Button>
+        </button>
       </div>
     </div>
   );
