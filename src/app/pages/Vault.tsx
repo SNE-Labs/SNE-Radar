@@ -113,17 +113,22 @@ export function Vault() {
 
       setManualLookup(trimmed);
       appendLog(`Lookup started for ${trimmed}`);
+
+      // Salvar no localStorage quando dados chegarem
+      if (lookupQuery.data) {
+        saveLocalPublic(lookupQuery.data);
+        appendLog(`Lookup succeeded for ${trimmed}`);
+      }
     },
-    [appendLog]
+    [appendLog, lookupQuery.data]
   );
 
-  // Salvar lookup no localStorage quando dados chegarem
+  // Salvar lookup no localStorage quando dados mudarem
   useEffect(() => {
     if (lookupQuery.data && manualLookup) {
       saveLocalPublic(lookupQuery.data);
-      appendLog(`Lookup succeeded for ${manualLookup}`);
     }
-  }, [lookupQuery.data, manualLookup, appendLog]);
+  }, [lookupQuery.data, manualLookup]);
 
   // Componente para verificar licença on-chain usando hook
   function LicenseCheckButton({ nodeId, licenseId: _licenseId }: { nodeId: string; licenseId: string }) {
@@ -203,7 +208,9 @@ export function Vault() {
               <h3 className="text-lg font-semibold" style={{ color: 'var(--text-1)' }}>Validador de Licenças Público</h3>
               <p className="text-sm" style={{ color: 'var(--text-3)' }}>
                 Cole um endereço Ethereum/Scroll ou ENS para verificar licenças públicas. Nenhuma wallet necessária.
-          </p>
+              </p>
+            </div>
+          </div>
 
           <div className="flex gap-2 items-center">
             <input
@@ -255,80 +262,9 @@ export function Vault() {
         {/* Top metrics - Simplificado: só quando há lookup */}
         {lookup && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div
-              className="p-6 rounded-xl"
-              style={{
-                backgroundColor: 'var(--bg-2)',
-                borderWidth: '1px',
-                borderColor: 'var(--stroke-1)',
-                boxShadow: 'var(--shadow-1)',
-              }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: 'var(--bg-3)' }}
-                >
-                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
-                </div>
-                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                  Licenças
-                </span>
-              </div>
-              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
-                {licensesCount}
-              </div>
-            </div>
-
-            <div
-              className="p-6 rounded-xl"
-              style={{
-                backgroundColor: 'var(--bg-2)',
-                borderWidth: '1px',
-                borderColor: 'var(--stroke-1)',
-                boxShadow: 'var(--shadow-1)',
-              }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: 'var(--bg-3)' }}
-                >
-                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
-                </div>
-                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                  SNE Keys
-                </span>
-              </div>
-              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
-                {keysCount}
-              </div>
-            </div>
-
-            <div
-              className="p-6 rounded-xl"
-              style={{
-                backgroundColor: 'var(--bg-2)',
-                borderWidth: '1px',
-                borderColor: 'var(--stroke-1)',
-                boxShadow: 'var(--shadow-1)',
-              }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="p-2 rounded-lg"
-                  style={{ backgroundColor: 'var(--bg-3)' }}
-                >
-                  <Shield className="w-5 h-5" style={{ color: 'var(--info-cyan)' }} />
-                </div>
-                <span className="text-sm font-medium uppercase tracking-wide" style={{ color: 'var(--text-3)' }}>
-                  SNE Boxes
-                </span>
-              </div>
-              <div className="text-2xl font-bold" style={{ color: 'var(--text-1)' }}>
-                {boxesCount}
-              </div>
-            </div>
+            <MetricCard label="Licenças Encontradas" value={licensesCount} icon={<Shield className="w-5 h-5" />} />
+            <MetricCard label="SNE Keys" value={keysCount} icon={<Shield className="w-5 h-5" />} />
+            <MetricCard label="SNE Boxes" value={boxesCount} icon={<Shield className="w-5 h-5" />} />
           </div>
         )}
 
