@@ -23,8 +23,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 socketio = SocketIO(
-    cors_allowed_origins=["https://radar.snelabs.space", "https://www.radar.snelabs.space"],
-    async_mode="eventlet"
+    cors_allowed_origins=["https://snelabs.space", "https://api.snelabs.space"],
+    async_mode="threading"  # Use threading instead of eventlet for compatibility
 )
 
 def create_app():
@@ -41,8 +41,14 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url or 'postgresql://localhost/sne'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Initialize extensions
-    db.init_app(app)
+    # Initialize extensions with error handling
+    try:
+        db.init_app(app)
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.warning(f"Database initialization failed: {e}")
+        logger.warning("Continuing without database - some features may not work")
+
     socketio.init_app(app)
 
     # Load configuration
@@ -64,64 +70,44 @@ def create_app():
          },
          supports_credentials=True)
 
+    # REGISTER BLUEPRINTS INSIDE create_app() - CRITICAL FIX
+    from . import auth_siwe, dashboard_api, charts_api  # Import modules here
+    from .vault_api import vault_bp
+    from .passport_api import passport_bp
+    from .radar_api import radar_bp
+    from .status_api import status_bp, dashboard_bp
+
+    # Existing blueprints
+    app.register_blueprint(auth_siwe.auth_bp)
+    app.register_blueprint(dashboard_api.dashboard_bp, url_prefix="/api/dashboard")
+    app.register_blueprint(charts_api.charts_bp)
+
+    # New SNE OS blueprints
+    app.register_blueprint(vault_bp, url_prefix="/api/vault")
+    app.register_blueprint(passport_bp, url_prefix="/api/passport")
+    app.register_blueprint(radar_bp, url_prefix="/api/radar")
+    app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")  # /api/dashboard/
+    app.register_blueprint(status_bp, url_prefix="/api/status")  # /api/status/dashboard
+
+    # Register global routes INSIDE create_app()
+    @app.route('/', methods=['GET'])
+    def root():
+        logger.info("Root endpoint called")
+        return jsonify({'message': 'SNE Web API is running', 'status': 'ok'}), 200
+
+    @app.route('/health', methods=['GET'])
+    def health():
+        return jsonify({'status': 'ok', 'service': 'sne-web', 'version': '1.0'}), 200
+
     logger.info("Flask app created successfully")
     return app
 
-# Create app instance for production (Gunicorn)
+# Create app instance for production (Gunicorn) - AFTER create_app is defined
 app = create_app()
 
-# Simple test route
-@app.route('/', methods=['GET'])
-def root():
-    logger.info("Root endpoint called")
-    return jsonify({'message': 'SNE Web API is running', 'status': 'ok'}), 200
-
-# Health check route (no dependencies)
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok', 'service': 'sne-web', 'version': '1.0'}), 200
-
-# Database initialization endpoint (manual)
-@app.route('/init-db', methods=['POST'])
-def init_database():
-    """Endpoint para inicializar banco de dados"""
-    try:
-        from .models import init_db
-        logger.info("Initializing database...")
-        init_db()
-        logger.info("Database initialized successfully")
-        return jsonify({'status': 'success', 'message': 'Database initialized'}), 200
-    except Exception as e:
-        logger.error(f"Database initialization failed: {str(e)}")
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-# Database auto-initialization (only if explicitly enabled)
-if os.getenv("AUTO_INIT_DB") == "true":
-    from .models import init_db_auto
-    try:
-        with app.app_context():
-            init_db_auto()
-    except Exception as e:
-        logger.warning(f"Database auto-initialization failed: {str(e)}")
-
-# Register blueprints
-from . import main, api, auth_siwe, dashboard_api, charts_api
-from .vault_api import vault_bp
-from .passport_api import passport_bp
-from .radar_api import radar_bp
-from .status_api import status_bp, dashboard_bp
-
-# Existing blueprints
-app.register_blueprint(auth_siwe.auth_bp)
-app.register_blueprint(dashboard_api.dashboard_bp, url_prefix="/api/dashboard")
-app.register_blueprint(charts_api.charts_bp)
-
-# New SNE OS blueprints - Direct imports to avoid namespace confusion
-app.register_blueprint(vault_bp, url_prefix="/api/vault")
-app.register_blueprint(passport_bp, url_prefix="/api/passport")
-app.register_blueprint(radar_bp, url_prefix="/api/radar")
-app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")  # /api/dashboard/
-app.register_blueprint(status_bp, url_prefix="/api/status")  # /api/status/dashboard
+# Database initialization moved inside create_app() if needed
+# Blueprints are now registered INSIDE create_app()
+# Removed duplicate registration that was causing issues
 
 
 
