@@ -3,6 +3,11 @@
   "outputDirectory": "frontend/dist",
   "installCommand": "bash -c 'if [ -d frontend ]; then cd frontend && npm install; else echo \"❌ Diretório frontend não encontrado!\"; ls -la; exit 1; fi'",
   "framework": "vite",
+  "functions": {
+    "frontend/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
