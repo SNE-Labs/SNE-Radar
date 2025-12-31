@@ -3,7 +3,7 @@ import { toast } from 'sonner'
 import { SiweMessage } from 'siwe'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import api from '../services/api'
+import { api } from '../services'
 
 const SIWE_DOMAIN = import.meta.env.VITE_SIWE_DOMAIN || 'radar.snelabs.space'
 const SIWE_ORIGIN = import.meta.env.VITE_SIWE_ORIGIN || 'https://radar.snelabs.space'

@@ -11,7 +11,7 @@ import {
   marketApi,
   systemApi,
   handleApiError
-} from '../services/api'
+} from '../services'
 import type {
   AnalysisResult
 } from '../types/analysis'

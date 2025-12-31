@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import { useWallet } from '../hooks/useWallet'
-import { dashboardApi } from '../services/api'
+import { dashboardApi } from '../services'
 import { formatCurrency, formatPercentage, safeNumber, safeString, cn } from '../lib/utils'
 
 interface MetricCardProps {

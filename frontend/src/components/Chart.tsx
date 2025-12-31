@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createChart, ColorType } from 'lightweight-charts'
 import type { Time , IChartApi, ISeriesApi, CandlestickData} from 'lightweight-charts'
-import { chartApi } from '../services/api'
+import { chartApi } from '../services'
 import { useWallet } from '../hooks/useWallet'
 import { cn, safeNumber } from '../lib/utils'
 

@@ -5,7 +5,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { logger } from '../lib/logger'
-import { chartApi } from '../services/api'
+import { chartApi } from '../services'
 import { adaptCandlesToLightweight, adaptLevelsToLightweight, validateCandles } from '../lib/chartAdapter'
 import type { UseChartDataResult } from '../types/chart'
 
