@@ -5,8 +5,8 @@ Provides real-time system metrics, status, and activity data
 import time
 import random
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify
-from .common.auth import require_session
+from functools import wraps
+from flask import Blueprint, jsonify, session
 
 # Local HTTP helpers to avoid import issues
 def ok(data=None, **meta):
@@ -19,6 +19,17 @@ def fail(code: str, message: str, status: int = 400, **details):
     """Standard error response"""
     payload = {"ok": False, "error": {"code": code, "message": message, "details": details or None}}
     return jsonify(payload), status
+
+# Local authentication helper to avoid import issues
+def require_session(fn):
+    """Decorator to require authenticated session (SIWE wallet connected)"""
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        addr = session.get("siwe_address")
+        if not addr:
+            return fail("UNAUTHENTICATED", "Connect wallet required", 401)
+        return fn(*args, **kwargs)
+    return wrapper
 
 status_bp = Blueprint("status", __name__)
 
