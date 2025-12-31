@@ -115,7 +115,7 @@ app.register_blueprint(charts_api.charts_bp)
 app.register_blueprint(vault_bp, url_prefix="/api/vault")
 app.register_blueprint(passport_bp, url_prefix="/api/passport")
 app.register_blueprint(radar_bp, url_prefix="/api/radar")
-app.register_blueprint(status_bp, url_prefix="/api")
+app.register_blueprint(status_bp)  # No prefix - routes already include /api/
 
 
 
