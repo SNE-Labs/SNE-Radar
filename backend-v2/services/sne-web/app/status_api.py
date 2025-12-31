@@ -34,12 +34,17 @@ def require_session(fn):
 status_bp = Blueprint("status", __name__)
 
 # Create dashboard blueprint for /api/dashboard routes
-dashboard_bp = Blueprint("dashboard", __name__)
+dashboard_bp = Blueprint("status_dashboard", __name__)
 
 @dashboard_bp.get("/")
 def dashboard_root():
     """Alias for /api/dashboard - returns system overview"""
     return ok(get_dashboard_payload())
+
+@status_bp.get("/health")
+def health_check():
+    """Health check endpoint - no dependencies"""
+    return ok({"status": "ok", "service": "sne-web"})
 
 @status_bp.get("/session")
 def get_session():
