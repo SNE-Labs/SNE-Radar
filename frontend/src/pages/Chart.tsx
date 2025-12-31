@@ -1,160 +1,167 @@
-import { useState, useEffect } from 'react'
+// ============================================
+// SNE RADAR - CHART PAGE v2.2
+// Página de gráficos usando InteractiveChart modular
+// ============================================
+
+import { useState } from 'react'
 import { useWallet } from '../hooks/useWallet'
-import { chartApi } from '../services/api'
-import { safeNumber, cn } from '../lib/utils'
-import Chart from '../components/Chart'
+import { useUIStore } from '../stores/ui'
+import { useChartData } from '../hooks/useChartData'
+import { Card } from '../app/components/Card'
+import { InteractiveChart } from '../components/InteractiveChart'
+import { cn, safeNumber } from '../lib/utils'
 
 export default function ChartPage() {
   const { tier, isAuthenticated } = useWallet()
-  const [selectedSymbol, setSelectedSymbol] = useState('BTCUSDT')
-  const [timeframe, setTimeframe] = useState('1h')
-  const [indicators, setIndicators] = useState<any>(null)
-  const [loadingIndicators, setLoadingIndicators] = useState(false)
+  const { symbol, timeframe, setSymbol, setTimeframe } = useUIStore()
+
+  // Indicators from chart data (temporary - will be enhanced)
+  const { data: chartData, isLoading: chartLoading } = useChartData(symbol, timeframe)
 
   const availableTimeframes = tier === 'free'
     ? ['15m', '1h', '4h', '1d']
     : ['1m', '5m', '15m', '1h', '4h', '1d']
 
-  useEffect(() => {
-    if (!isAuthenticated) return
-
-    const loadIndicators = async () => {
-      try {
-        setLoadingIndicators(true)
-        const response = await chartApi.getIndicators(selectedSymbol, timeframe, tier === 'free' ? 'basic' : 'advanced')
-        setIndicators(response.data)
-      } catch (error) {
-        console.error('Failed to load indicators:', error)
-      } finally {
-        setLoadingIndicators(false)
-      }
-    }
-
-    loadIndicators()
-    const interval = setInterval(loadIndicators, 30000) // Atualizar a cada 30s
-    return () => clearInterval(interval)
-  }, [selectedSymbol, timeframe, tier, isAuthenticated])
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-center">
+          <p className="text-white/70 mb-4">Conecte sua wallet para acessar os gráficos</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Chart Controls */}
-      <div className="flex flex-wrap items-center gap-4">
-        <select
-          value={selectedSymbol}
-          onChange={(e) => setSelectedSymbol(e.target.value)}
-          className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-md px-4 py-2 font-mono text-[#F7F7F8]"
-        >
-          <option>BTCUSDT</option>
-          {tier !== 'free' && <option>ETHUSDT</option>}
-          {tier === 'pro' && <option>SOLUSDT</option>}
-        </select>
+      <Card>
+        <div className="flex flex-wrap items-center gap-4">
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              Símbolo
+            </label>
+            <select
+              value={symbol}
+              onChange={(e) => setSymbol(e.target.value)}
+              className="bg-[#0B0B0B] border border-white/20 rounded-md px-4 py-3 font-mono text-white focus:border-[#FF6A00] focus:outline-none"
+            >
+              <option value="BTCUSDT">BTCUSDT</option>
+              {tier !== 'free' && <option value="ETHUSDT">ETHUSDT</option>}
+              {tier === 'pro' && <option value="SOLUSDT">SOLUSDT</option>}
+            </select>
+          </div>
 
-        <div className="flex gap-2">
-          {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => {
-            const isAvailable = availableTimeframes.includes(tf)
-            return (
-              <button
-                key={tf}
-                onClick={() => isAvailable && setTimeframe(tf)}
-                disabled={!isAvailable}
-                className={cn(
-                  'px-3 py-1.5 rounded-md text-sm font-mono transition-all',
-                  timeframe === tf && isAvailable
-                    ? 'bg-[#FF6A00] text-white'
-                    : 'bg-[#111216] border border-[rgba(255,255,255,0.1)] hover:border-[#FF6A00]',
-                  !isAvailable && 'opacity-30 cursor-not-allowed'
-                )}
-              >
-                {tf}
-              </button>
-            )
-          })}
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              Timeframe
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {['1m', '5m', '15m', '1h', '4h', '1d'].map((tf) => {
+                const isAvailable = availableTimeframes.includes(tf)
+                return (
+                  <button
+                    key={tf}
+                    onClick={() => isAvailable && setTimeframe(tf)}
+                    disabled={!isAvailable}
+                    className={cn(
+                      'px-3 py-2 rounded-md text-sm font-mono transition-all',
+                      timeframe === tf && isAvailable
+                        ? 'bg-[#FF6A00] text-white'
+                        : 'bg-[#1B1B1F] border border-white/10 hover:border-[#FF6A00] text-white',
+                      !isAvailable && 'opacity-30 cursor-not-allowed'
+                    )}
+                  >
+                    {tf}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Chart Component */}
-      <Chart symbol={selectedSymbol} timeframe={timeframe} height={600} />
+      {/* Interactive Chart */}
+      <InteractiveChart
+        symbol={symbol}
+        timeframe={timeframe}
+        width={1200}
+        height={600}
+        showControls={true}
+      />
 
       {/* Indicators Sidebar */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* RSI - Sempre disponível */}
-        <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
-          <div className="text-sm text-[#A6A6A6] mb-2">RSI (14)</div>
-          {loadingIndicators ? (
-            <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
+        <Card>
+          <div className="text-sm text-white/70 mb-2">RSI (14)</div>
+          {chartLoading ? (
+            <div className="h-8 w-16 bg-white/10 rounded animate-pulse"></div>
           ) : (
             <div className={cn(
               'text-2xl font-mono font-bold',
-              indicators?.rsi && safeNumber(indicators.rsi, 0) > 70 ? 'text-[#FF4D4F]' :
-              indicators?.rsi && safeNumber(indicators.rsi, 0) < 30 ? 'text-[#00C48C]' : 'text-[#F7F7F8]'
+              chartData?.candles && chartData.candles.length > 0
+                ? 'text-white'
+                : 'text-white/50'
             )}>
-              {safeNumber(indicators?.rsi, 0).toFixed(1) || '--'}
+              {/* TODO: Calculate RSI from candle data */}
+              --
             </div>
           )}
-        </div>
-
-        {/* MACD - Sempre disponível */}
-        <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
-          <div className="text-sm text-[#A6A6A6] mb-2">MACD</div>
-          {loadingIndicators ? (
-            <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
-          ) : (
-            <div className={cn(
-              'text-2xl font-mono font-bold',
-              indicators?.macd && safeNumber(indicators.macd, 0) > 0 ? 'text-[#00C48C]' : 'text-[#FF4D4F]'
-            )}>
-              {indicators?.macd ? (safeNumber(indicators.macd, 0) > 0 ? '+' : '') + safeNumber(indicators.macd, 0).toFixed(2) : '--'}
-            </div>
-          )}
-        </div>
+        </Card>
 
         {/* Volume - Sempre disponível */}
-        <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
-          <div className="text-sm text-[#A6A6A6] mb-2">Volume 24h</div>
-          {loadingIndicators ? (
-            <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
+        <Card>
+          <div className="text-sm text-white/70 mb-2">Volume Total</div>
+          {chartLoading ? (
+            <div className="h-8 w-16 bg-white/10 rounded animate-pulse"></div>
           ) : (
-            <div className="text-2xl font-mono font-bold">
-              {indicators?.volume ? (safeNumber(indicators.volume, 0) / 1e6).toFixed(1) + 'M' : '--'}
+            <div className="text-2xl font-mono font-bold text-white">
+              {chartData?.candles
+                ? (chartData.candles.reduce((sum, c) => sum + (c.volume || 0), 0) / 1e6).toFixed(1) + 'M'
+                : '--'
+              }
             </div>
           )}
-        </div>
+        </Card>
 
-        {/* Indicadores avançados - Apenas premium+ */}
-        {tier !== 'free' && (
-          <div className="bg-[#111216] border border-[rgba(255,255,255,0.1)] rounded-[10px] p-4">
-            <div className="text-sm text-[#A6A6A6] mb-2">
-              {tier === 'pro' ? 'Bollinger Bands' : 'Stochastic'}
+        {/* Supports Count */}
+        <Card>
+          <div className="text-sm text-white/70 mb-2">Suportes</div>
+          {chartLoading ? (
+            <div className="h-8 w-16 bg-white/10 rounded animate-pulse"></div>
+          ) : (
+            <div className="text-2xl font-mono font-bold text-[#00C48C]">
+              {chartData?.levels?.supports?.length || 0}
             </div>
-            {loadingIndicators ? (
-              <div className="h-8 w-16 bg-[#1B1B1F] rounded animate-pulse"></div>
-            ) : (
-              <div className="text-lg font-mono font-bold">
-                {tier === 'pro' && indicators?.bollinger_bands ? (
-                  <div className="text-xs space-y-1">
-                    <div>U: {safeNumber(indicators.bollinger_bands.upper, 0).toFixed(0)}</div>
-                    <div>L: {safeNumber(indicators.bollinger_bands.lower, 0).toFixed(0)}</div>
-                  </div>
-                ) : tier !== 'free' && indicators?.stochastic ? (
-                  <div className="text-xs space-y-1">
-                    <div>K: {safeNumber(indicators.stochastic.k, 0).toFixed(1)}</div>
-                    <div>D: {safeNumber(indicators.stochastic.d, 0).toFixed(1)}</div>
-                  </div>
-                ) : (
-                  '--'
-                )}
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </Card>
+
+        {/* Resistances Count */}
+        <Card>
+          <div className="text-sm text-white/70 mb-2">Resistências</div>
+          {chartLoading ? (
+            <div className="h-8 w-16 bg-white/10 rounded animate-pulse"></div>
+          ) : (
+            <div className="text-2xl font-mono font-bold text-[#FF4D4F]">
+              {chartData?.levels?.resistances?.length || 0}
+            </div>
+          )}
+        </Card>
       </div>
 
+      {/* Upgrade Prompt for Free Users */}
       {tier === 'free' && (
-        <div className="bg-[rgba(255,106,0,0.1)] border border-[rgba(255,106,0,0.3)] rounded-[10px] p-4 text-center">
-          <p className="text-sm text-[#FF6A00]">
-            Upgrade to Premium for advanced charts, more timeframes, and additional indicators
-          </p>
-        </div>
+        <Card variant="bordered" className="border-[#FF6A00]/50 bg-[#FF6A00]/5">
+          <div className="text-center">
+            <p className="text-[#FF6A00] mb-2">
+              🚀 Upgrade to Premium for advanced indicators, more timeframes, and real-time data
+            </p>
+            <p className="text-sm text-white/70">
+              Gráficos profissionais com indicadores técnicos avançados
+            </p>
+          </div>
+        </Card>
       )}
     </div>
   )
