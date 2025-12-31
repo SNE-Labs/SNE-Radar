@@ -3,6 +3,7 @@
 // Componente principal que combina os 4 módulos do chart
 // ============================================
 
+import * as React from 'react'
 import { useRef, useState, useCallback } from 'react'
 import { useUIStore } from '../stores/ui'
 import { useChartData, useCurrentPrice } from '../hooks/useChartData'
