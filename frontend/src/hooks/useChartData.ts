@@ -185,8 +185,8 @@ export const useCurrentPrice = (
   return useQuery({
     queryKey: ['current-price', symbol, timeframe],
     queryFn: async ({ signal }) => {
-      // Get latest candle to derive current price
-      const rawData = await chartApi.getCandles(symbol, timeframe, 1)
+      // Get latest candle to derive current price (minimum 200 for backend stability)
+      const rawData = await chartApi.getCandles(symbol, timeframe, 200)
       const validCandles = validateCandles(rawData.candles || [])
 
       if (validCandles.length === 0) {
