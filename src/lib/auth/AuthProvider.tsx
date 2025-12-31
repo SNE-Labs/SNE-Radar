@@ -23,14 +23,40 @@ async function getNonce(address: string) {
 // como você quer "não quebrar nada", dá pra começar usando o provider injetado (MetaMask)
 // e depois trocar por WalletConnect sem mudar o resto do OS.
 async function requestAddress(): Promise<string> {
+  // Verificar se estamos em HTTPS (MetaMask requer HTTPS)
+  if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+    throw new Error("MetaMask requires HTTPS. Please access this site via https://snelabs.space");
+  }
+
   // @ts-expect-error - ethereum injected
   const eth = window.ethereum;
-  if (!eth) throw new Error("No injected wallet found");
 
-  const [addr] = (await eth.request({ method: "eth_requestAccounts" })) as string[];
-  if (!addr) throw new Error("Wallet not connected");
+  if (!eth) {
+    throw new Error("No wallet found. Please install MetaMask or another Web3 wallet and refresh the page.");
+  }
 
-  return addr;
+  // Verificar se é MetaMask ou outro provider
+  if (eth.isMetaMask) {
+    console.log("MetaMask detected");
+  } else {
+    console.log("Other Web3 wallet detected");
+  }
+
+  try {
+    const accounts = (await eth.request({ method: "eth_requestAccounts" })) as string[];
+    if (!accounts || accounts.length === 0) {
+      throw new Error("No accounts found. Please connect your wallet.");
+    }
+    return accounts[0];
+  } catch (error: any) {
+    if (error.code === 4001) {
+      throw new Error("Connection rejected by user");
+    }
+    if (error.code === -32002) {
+      throw new Error("Connection request already pending. Check your wallet.");
+    }
+    throw error;
+  }
 }
 
 async function signMessage(message: string): Promise<string> {

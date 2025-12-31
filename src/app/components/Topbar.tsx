@@ -5,6 +5,22 @@ import { useState } from 'react';
 export function Topbar() {
   const { isConnected, address, connect } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    setConnectError(null);
+
+    try {
+      await connect();
+    } catch (error: any) {
+      console.error("Wallet connection failed:", error);
+      setConnectError(error.message || "Failed to connect wallet");
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   return (
     <header
@@ -44,16 +60,24 @@ export function Topbar() {
 
         {/* Connect Wallet Button */}
         {!isConnected ? (
-          <button
-            onClick={connect}
-            className="px-4 py-2 rounded-lg font-medium text-sm transition-all"
-            style={{
-              backgroundColor: 'var(--accent-orange)',
-              color: '#FFFFFF',
-            }}
-          >
-            Connect Wallet
-          </button>
+          <div className="flex flex-col items-end">
+            <button
+              onClick={handleConnect}
+              disabled={isConnecting}
+              className="px-4 py-2 rounded-lg font-medium text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--accent-orange)',
+                color: '#FFFFFF',
+              }}
+            >
+              {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+            </button>
+            {connectError && (
+              <p className="text-xs mt-1 max-w-xs text-right" style={{ color: 'var(--danger-red)' }}>
+                {connectError}
+              </p>
+            )}
+          </div>
         ) : (
           <div
             className="px-4 py-2 rounded-lg font-mono text-sm"
