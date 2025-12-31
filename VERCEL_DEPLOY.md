@@ -23,15 +23,29 @@ O SNE OS está **100% preparado** para deploy no Vercel com a seguinte configura
 
 ### 2. Configurações Automáticas (via vercel.json)
 
+O Vercel detectará automaticamente que é um projeto Vite e aplicará as configurações do `vercel.json`:
+
 ```json
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
@@ -39,9 +53,10 @@ O SNE OS está **100% preparado** para deploy no Vercel com a seguinte configura
 
 ### 3. Variáveis de Ambiente
 
-Configure no Vercel Dashboard:
+**IMPORTANTE:** Configure as variáveis no **Vercel Dashboard** (não no arquivo):
 
-#### Produção (snelabs.space):
+#### No Vercel Dashboard → Project Settings → Environment Variables:
+
 ```
 VITE_API_BASE=https://snelabs.space
 VITE_WALLETCONNECT_PROJECT_ID=3fcc6bba6f1de962d911bb5b5c3dba68
@@ -50,8 +65,8 @@ VITE_SIWE_DOMAIN=snelabs.space
 VITE_SIWE_ORIGIN=https://snelabs.space
 ```
 
-#### Desenvolvimento (local):
-```
+#### Para desenvolvimento local (`.env` file):
+```bash
 VITE_API_BASE=http://localhost:5000
 ```
 
