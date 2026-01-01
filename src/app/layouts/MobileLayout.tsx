@@ -96,8 +96,10 @@ export function MobileLayout() {
     { id: 'docs', label: 'Docs', icon: 'FileText' as const },
   ];
 
-  // Atualizar rota quando tab muda
-  useEffect(() => {
+  // Função para mudar tab e navegar
+  const handleTabChange = (tabId: string) => {
+    if (tabId === activeTab) return; // Evitar navegação desnecessária
+
     const tabRoutes = {
       radar: '/radar',
       vault: '/vault',
@@ -107,13 +109,12 @@ export function MobileLayout() {
       docs: '/docs'
     };
 
-    const newRoute = tabRoutes[activeTab as keyof typeof tabRoutes] || '/radar';
-    if (location.pathname !== newRoute) {
-      navigate(newRoute, { replace: true });
-    }
-  }, [activeTab, navigate]);
+    const newRoute = tabRoutes[tabId as keyof typeof tabRoutes] || '/radar';
+    setActiveTab(tabId);
+    navigate(newRoute, { replace: true });
+  };
 
-  // Atualizar tab quando rota muda
+  // Atualizar tab baseada na rota atual (apenas uma vez)
   useEffect(() => {
     const path = location.pathname;
     let newTab = 'radar';
@@ -125,10 +126,8 @@ export function MobileLayout() {
     else if (path.includes('/status')) newTab = 'status';
     else if (path.includes('/docs')) newTab = 'docs';
 
-    if (newTab !== activeTab) {
-      setActiveTab(newTab);
-    }
-  }, [location.pathname, activeTab]);
+    setActiveTab(newTab);
+  }, []); // Removido location.pathname para evitar loop
 
   // Get current component
   const CurrentComponent = routeComponents[location.pathname as keyof typeof routeComponents] || MobileRadar;
@@ -148,7 +147,7 @@ export function MobileLayout() {
           <button
             key={tab.id}
             className={`mobile-tab-item ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
           >
             {tab.icon === 'Activity' && <Activity size={20} />}
             {tab.icon === 'Shield' && <Shield size={20} />}
