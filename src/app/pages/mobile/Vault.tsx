@@ -1,26 +1,9 @@
-import { useAccount, useBalance } from 'wagmi';
-
 export function MobileVault() {
-  const { address, isConnected } = useAccount();
-  const { data: balance } = useBalance({
-    address: address,
-  });
-
   return (
     <div className="mobile-vault">
       <div className="mobile-vault-header">
         <h1 className="mobile-vault-title">Vault</h1>
         <p className="mobile-vault-subtitle">Soberania física em desenvolvimento</p>
-        {isConnected && address && (
-          <div className="mobile-wallet-status">
-            <div className="mobile-wallet-balance">
-              <span className="mobile-balance-label">Saldo:</span>
-              <span className="mobile-balance-value">
-                {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : 'Carregando...'}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="mobile-vault-content">
@@ -29,7 +12,6 @@ export function MobileVault() {
           <p className="mobile-card-text">
             O SNE Vault está sendo desenvolvido para fornecer soberania física
             completa para suas chaves e dados.
-            {isConnected ? ' Integração Web3 ativa.' : ' Conecte sua wallet para visualizar saldo.'}
           </p>
         </div>
 
