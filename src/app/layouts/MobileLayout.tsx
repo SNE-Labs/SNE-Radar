@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Activity, Shield, Key, BarChart3 } from 'lucide-react';
+import { Activity, Shield, Key, BarChart3, DollarSign, FileText } from 'lucide-react';
 
 // Lazy load mobile pages
 const MobileHome = lazy(() => import('../pages/mobile/Home').then(m => ({ default: m.MobileHome })));
@@ -81,7 +81,9 @@ export function MobileLayout() {
     if (path.includes('/radar')) return 'radar';
     if (path.includes('/vault')) return 'vault';
     if (path.includes('/pass')) return 'pass';
+    if (path.includes('/pricing')) return 'pricing';
     if (path.includes('/status')) return 'status';
+    if (path.includes('/docs')) return 'docs';
     return 'radar'; // default
   });
 
@@ -89,7 +91,9 @@ export function MobileLayout() {
     { id: 'radar', label: 'Radar', icon: 'Activity' as const },
     { id: 'vault', label: 'Vault', icon: 'Shield' as const },
     { id: 'pass', label: 'Pass', icon: 'Key' as const },
+    { id: 'pricing', label: 'Pricing', icon: 'DollarSign' as const },
     { id: 'status', label: 'Status', icon: 'BarChart3' as const },
+    { id: 'docs', label: 'Docs', icon: 'FileText' as const },
   ];
 
   // Atualizar rota quando tab muda
@@ -98,7 +102,9 @@ export function MobileLayout() {
       radar: '/radar',
       vault: '/vault',
       pass: '/pass',
-      status: '/status'
+      pricing: '/pricing',
+      status: '/status',
+      docs: '/docs'
     };
 
     const newRoute = tabRoutes[activeTab as keyof typeof tabRoutes] || '/radar';
@@ -115,7 +121,9 @@ export function MobileLayout() {
     if (path.includes('/radar')) newTab = 'radar';
     else if (path.includes('/vault')) newTab = 'vault';
     else if (path.includes('/pass')) newTab = 'pass';
+    else if (path.includes('/pricing')) newTab = 'pricing';
     else if (path.includes('/status')) newTab = 'status';
+    else if (path.includes('/docs')) newTab = 'docs';
 
     if (newTab !== activeTab) {
       setActiveTab(newTab);
