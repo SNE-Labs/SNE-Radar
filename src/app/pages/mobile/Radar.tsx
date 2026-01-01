@@ -14,8 +14,8 @@ export function MobileRadar() {
 
   const signalsData = {
     signals: [
-      { symbol: 'BTC/USD', signal: 'BUY', strength: 85, timestamp: new Date() },
-      { symbol: 'ETH/USD', signal: 'HOLD', strength: 62, timestamp: new Date() }
+      { symbol: 'BTC/USD', signal: 'BUY', strength: 'STRONG', timestamp: new Date() },
+      { symbol: 'ETH/USD', signal: 'HOLD', strength: 'MODERATE', timestamp: new Date() }
     ]
   };
 
