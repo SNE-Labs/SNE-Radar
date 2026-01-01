@@ -83,3 +83,5 @@ export const PRODUCTS: Product[] = [
     contractAddress: '0x0000000000000000000000000000000000000000', // TODO: Adicionar endereço real
   },
 ];
+
+

@@ -70,7 +70,7 @@ export function Sidebar() {
                     style={{ color: isActive ? 'var(--accent-orange)' : 'var(--text-2)' }}
                   />
                   <span
-                    className="text-sm font-medium"
+                    className="text-sm font-medium whitespace-nowrap"
                     style={{ color: isActive ? 'var(--text-1)' : 'var(--text-2)' }}
                   >
                     {item.label}

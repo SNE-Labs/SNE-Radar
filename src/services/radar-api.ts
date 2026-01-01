@@ -39,27 +39,47 @@ export interface WatchlistResponse {
 /**
  * API client para SNE Radar
  * Conecta aos endpoints reais do backend Flask
+ * 
+ * Endpoints disponíveis no backend:
+ * - GET  /api/radar/market-summary (público)
+ * - POST /api/radar/signals (público)
+ * - GET  /api/dashboard/summary (requer auth)
+ * - GET  /api/radar/markets (público)
  */
 export const radarApi = {
-  // Market summary (dados de mercado gerais)
+  // Market summary público (não requer auth)
   getMarketSummary: (): Promise<MarketSummary> =>
+    apiGet('/api/radar/market-summary'),
+
+  // Market summary autenticado (dados completos)
+  getMarketSummaryAuth: (): Promise<MarketSummary> =>
     apiGet('/api/dashboard/summary'),
 
-  // Signals para um símbolo específico
+  // Signals para um símbolo específico (público)
   getSignals: (symbol: string, timeframe: string): Promise<{ signals: Signal[] }> =>
-    apiPost('/api/analyze', { symbol, timeframe }),
+    apiPost('/api/radar/signals', { symbol, timeframe }),
 
-  // Watchlist do usuário
+  // Análise completa (requer auth)
+  analyzeSymbol: (symbol: string, timeframe: string, market: string = 'crypto') =>
+    apiPost('/api/radar/analyze', { symbol, timeframe, market }),
+
+  // Watchlist do usuário (requer auth)
   getWatchlist: (): Promise<WatchlistResponse> =>
-    apiGet('/api/dashboard/watchlist'),
+    apiGet('/api/radar/watchlist'),
 
-  addToWatchlist: (symbol: string): Promise<{ success: boolean }> =>
-    apiPost('/api/dashboard/watchlist', { symbol }),
+  addToWatchlist: (symbol: string, market: string = 'crypto'): Promise<{ success: boolean }> =>
+    apiPost('/api/radar/watchlist', { action: 'add', symbol, market }),
 
-  removeFromWatchlist: (symbol: string): Promise<{ success: boolean }> =>
-    apiDelete(`/api/dashboard/watchlist/${symbol}`),
+  removeFromWatchlist: (symbol: string, market: string = 'crypto'): Promise<{ success: boolean }> =>
+    apiPost('/api/radar/watchlist', { action: 'remove', symbol, market }),
+
+  // Markets disponíveis (público)
+  getMarkets: () =>
+    apiGet('/api/radar/markets'),
 
   // Status do sistema
   getSystemStatus: () =>
-    apiGet('/api/v1/system/status'),
+    apiGet('/api/status/dashboard'),
 };
+
+

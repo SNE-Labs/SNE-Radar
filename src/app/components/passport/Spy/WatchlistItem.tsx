@@ -112,3 +112,5 @@ export default function WatchlistItem({ item, onRemove }: WatchlistItemProps) {
     </div>
   )
 }
+
+

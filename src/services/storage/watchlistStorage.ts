@@ -58,3 +58,5 @@ export function updateWatchlistItem(address: string, updates: Partial<WatchlistI
 export function clearWatchlist(): void {
   localStorage.removeItem(STORAGE_KEY)
 }
+
+

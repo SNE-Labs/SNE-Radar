@@ -49,3 +49,5 @@ Backend deve permitir:
 - Origin: `https://snelabs.space`
 - Credentials: `true`
 - Methods: `GET, POST, OPTIONS`
+
+

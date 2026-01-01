@@ -61,3 +61,5 @@ export function MetricCard({ label, value, trend, trendValue, icon }: MetricCard
     </div>
   );
 }
+
+

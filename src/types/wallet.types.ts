@@ -22,3 +22,5 @@ export interface ContractInfo {
 }
 
 export type Mode = 'view' | 'trade'
+
+
