@@ -71,17 +71,6 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleSheet);
 }
 
-// Map routes to components
-const routeComponents = {
-  '/': MobileHome,
-  '/radar': MobileRadar,
-  '/vault': MobileVault,
-  '/pass': MobilePass,
-  '/pricing': MobilePricing,
-  '/status': MobileStatus,
-  '/docs': MobileDocs,
-};
-
 export function MobileLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -165,53 +154,13 @@ export function MobileLayout() {
   );
 }
 
-// Basic mobile styles
-const mobileStyles = `
-  .mobile-layout {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: var(--bg-0, #ffffff);
-  }
-
-  .mobile-content-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-  }
-
-  .mobile-tab-bar {
-    display: flex;
-    height: 83px;
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(20px);
-    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-  }
-
-  .mobile-tab-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border: none;
-    background: transparent;
-    color: #8E8E93;
-    font-size: 10px;
-    font-weight: 500;
-    transition: color 0.2s ease;
-  }
-
-  .mobile-tab-item.active {
-    color: #007AFF;
-  }
-`;
-
-// Inject styles
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = mobileStyles;
-  document.head.appendChild(styleSheet);
-}
+// Map routes to components
+const routeComponents = {
+  '/': MobileHome,
+  '/radar': MobileRadar,
+  '/vault': MobileVault,
+  '/pass': MobilePass,
+  '/pricing': MobilePricing,
+  '/status': MobileStatus,
+  '/docs': MobileDocs,
+};

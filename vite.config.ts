@@ -47,8 +47,6 @@ export default defineConfig({
           'page-radar': ['./src/app/pages/Radar'],
           'page-vault': ['./src/app/pages/Vault'],
 
-          // Utils and hooks (compartilhado)
-          'utils': ['./src/hooks', './src/utils', './src/lib/api']
         },
         // Nomes de arquivos otimizados
         chunkFileNames: (chunkInfo) => {
@@ -75,13 +73,7 @@ export default defineConfig({
       }
     },
     // Otimizações de build
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: process.env.NODE_ENV === 'production',
-        drop_debugger: process.env.NODE_ENV === 'production'
-      }
-    },
+    minify: 'esbuild',
     // Source maps apenas em development
     sourcemap: process.env.NODE_ENV !== 'production',
     // Target moderno para melhor performance
