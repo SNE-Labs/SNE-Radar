@@ -1,5 +1,4 @@
-import { render, screen } from '@testing-library/react';
-import { renderHook } from '@testing-library/react-hooks';
+import { render, screen, renderHook } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { usePlatform } from '../hooks/usePlatform';
 import App from '../app/App';
