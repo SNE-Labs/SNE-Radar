@@ -75,10 +75,12 @@ def create_app():
     from .vault_api import vault_bp
     from .passport_api import passport_bp
     from .radar_api import radar_bp
-    from .status_api import status_bp, dashboard_bp
+    from .status_api import status_bp, dashboard_bp as status_dashboard_bp
 
     # Existing blueprints
     app.register_blueprint(auth_siwe.auth_bp)
+    # Register dashboard root endpoint from status_api FIRST (before dashboard_api routes)
+    app.register_blueprint(status_dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(dashboard_api.dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(charts_api.charts_bp)
 
