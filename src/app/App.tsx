@@ -2,18 +2,105 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider, createConfig, http } from 'wagmi';
 import { scroll } from 'viem/chains';
+import { Suspense, lazy } from 'react';
+
+// Desktop Components (carregados normalmente)
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { BottomBar } from './components/BottomBar';
+
+// Desktop Pages (carregadas normalmente)
 import { Home } from './pages/Home';
-import { Radar } from './pages/Radar';
-import { Pass } from './pages/Pass';
-import { Vault } from './pages/Vault';
 import { Pricing } from './pages/Pricing';
 import { Status } from './pages/Status';
 import { Docs } from './pages/Docs';
+
+// Mobile Pages (lazy loaded para performance)
+const MobileRadar = lazy(() => import('./pages/mobile/Radar'));
+const MobileVault = lazy(() => import('./pages/mobile/Vault'));
+const MobilePass = lazy(() => import('./pages/mobile/Pass'));
+
+// Desktop Pages (lazy loaded para performance)
+const DesktopRadar = lazy(() => import('./pages/Radar'));
+const DesktopVault = lazy(() => import('./pages/Vault'));
+const DesktopPass = lazy(() => import('./pages/Pass'));
+
+// Mobile Layout Components (lazy loaded)
+const MobileLayout = lazy(() => import('./layouts/MobileLayout'));
+
 import { AuthProvider } from '@/lib/auth/AuthProvider.tsx';
 import { EntitlementsProvider } from '@/lib/auth/EntitlementsProvider.tsx';
+import { usePlatform } from '@/hooks/usePlatform';
+
+// Componente que decide qual layout usar baseado na plataforma
+function AppContent() {
+  const { isMobile } = usePlatform();
+
+  if (isMobile) {
+    return (
+      <Suspense fallback={<MobileSkeleton />}>
+        <MobileLayout />
+      </Suspense>
+    );
+  }
+
+  // Desktop Layout (existing)
+  return (
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-0)' }}>
+      {/* Main Layout */}
+      <div className="flex flex-1">
+        {/* Left Sidebar - Fixed 300px */}
+        <Sidebar />
+
+        {/* Center Content - Fluid */}
+        <div className="flex-1 flex flex-col">
+          {/* Topbar */}
+          <Topbar />
+
+          {/* Main Content Area with Right Panel */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* Center Content */}
+            <main className="flex-1 overflow-y-auto">
+              <Suspense fallback={<DesktopSkeleton />}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="/home" replace />} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/radar" element={<DesktopRadar />} />
+                  <Route path="/pass" element={<DesktopPass />} />
+                  <Route path="/vault" element={<DesktopVault />} />
+                  <Route path="/pricing" element={<Pricing />} />
+                  <Route path="/status" element={<Status />} />
+                  <Route path="/docs" element={<Docs />} />
+                </Routes>
+              </Suspense>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar - Session Bar */}
+      <BottomBar />
+    </div>
+  );
+}
+
+// Skeleton para desktop
+function DesktopSkeleton() {
+  return (
+    <div className="flex-1 flex items-center justify-center">
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
+
+// Skeleton para mobile
+function MobileSkeleton() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 export default function App() {
   // Create QueryClient for React Query
@@ -41,44 +128,12 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <EntitlementsProvider>
-        <BrowserRouter>
-          <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg-0)' }}>
-            {/* Main Layout */}
-            <div className="flex flex-1">
-              {/* Left Sidebar - Fixed 300px */}
-              <Sidebar />
-
-              {/* Center Content - Fluid */}
-              <div className="flex-1 flex flex-col">
-                {/* Topbar */}
-                <Topbar />
-
-                {/* Main Content Area with Right Panel */}
-                <div className="flex flex-1 overflow-hidden">
-                  {/* Center Content */}
-                  <main className="flex-1 overflow-y-auto">
-                    <Routes>
-                      <Route path="/" element={<Navigate to="/home" replace />} />
-                      <Route path="/home" element={<Home />} />
-                      <Route path="/radar" element={<Radar />} />
-                      <Route path="/pass" element={<Pass />} />
-                      <Route path="/vault" element={<Vault />} />
-                      <Route path="/pricing" element={<Pricing />} />
-                      <Route path="/status" element={<Status />} />
-                      <Route path="/docs" element={<Docs />} />
-                    </Routes>
-                  </main>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Bar - Session Bar */}
-            <BottomBar />
-          </div>
-        </BrowserRouter>
-      </EntitlementsProvider>
-    </AuthProvider>
-    </QueryClientProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+          </EntitlementsProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </WagmiProvider>
   );
 }
