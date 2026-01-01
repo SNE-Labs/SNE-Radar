@@ -1,6 +1,6 @@
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useLazyMobileComponents, useMobilePrefetch } from '../../hooks/useLazyMobileComponents';
+import { Activity, Shield, Key, BarChart3 } from 'lucide-react';
 
 // Lazy load mobile pages
 const MobileHome = lazy(() => import('../pages/mobile/Home'));
@@ -20,6 +20,57 @@ function MobileSkeleton() {
   );
 }
 
+// Basic mobile styles
+const mobileStyles = `
+  .mobile-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-0, #ffffff);
+  }
+
+  .mobile-content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .mobile-tab-bar {
+    display: flex;
+    height: 83px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .mobile-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: #8E8E93;
+    font-size: 10px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-tab-item.active {
+    color: #007AFF;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = mobileStyles;
+  document.head.appendChild(styleSheet);
+}
+
 // Map routes to components
 const routeComponents = {
   '/': MobileHome,
@@ -35,11 +86,6 @@ export function MobileLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Lazy loading dos componentes mobile
-  const { TabBar, Container, tabBarLoaded, containerLoaded } = useLazyMobileComponents();
-
-  // Prefetch de rotas adjacentes
-  useMobilePrefetch(location.pathname);
   const [activeTab, setActiveTab] = useState(() => {
     // Determinar tab ativa baseada na rota atual
     const path = location.pathname;
@@ -49,9 +95,6 @@ export function MobileLayout() {
     if (path.includes('/status')) return 'status';
     return 'radar'; // default
   });
-
-  const [currentRoute, setCurrentRoute] = useState(location.pathname);
-  const [direction, setDirection] = useState(1);
 
   const tabs = [
     { id: 'radar', label: 'Radar', icon: 'Activity' as const },
@@ -70,14 +113,12 @@ export function MobileLayout() {
     };
 
     const newRoute = tabRoutes[activeTab as keyof typeof tabRoutes] || '/radar';
-    if (currentRoute !== newRoute) {
-      setDirection(currentRoute < newRoute ? 1 : -1);
-      setCurrentRoute(newRoute);
+    if (location.pathname !== newRoute) {
       navigate(newRoute, { replace: true });
     }
-  }, [activeTab, currentRoute, navigate]);
+  }, [activeTab, navigate]);
 
-  // Atualizar tab quando rota muda (para navegação direta)
+  // Atualizar tab quando rota muda
   useEffect(() => {
     const path = location.pathname;
     let newTab = 'radar';
@@ -88,55 +129,89 @@ export function MobileLayout() {
     else if (path.includes('/status')) newTab = 'status';
 
     if (newTab !== activeTab) {
-      setDirection(activeTab < newTab ? 1 : -1);
       setActiveTab(newTab);
     }
-    setCurrentRoute(path);
   }, [location.pathname, activeTab]);
 
   // Get current component
-  const CurrentComponent = routeComponents[currentRoute as keyof typeof routeComponents] || MobileRadar;
+  const CurrentComponent = routeComponents[location.pathname as keyof typeof routeComponents] || MobileRadar;
 
   return (
     <div className="mobile-layout">
-      {/* Main Content Area with Container Navigation */}
+      {/* Main Content Area */}
       <div className="mobile-content-area">
-        {Container ? (
-          <Container
-            direction={direction}
-            onSwipeLeft={() => {
-              // Swipe left - next tab
-              const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-              const nextIndex = (currentIndex + 1) % tabs.length;
-              setActiveTab(tabs[nextIndex].id);
-            }}
-            onSwipeRight={() => {
-              // Swipe right - previous tab
-              const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
-              const prevIndex = currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
-              setActiveTab(tabs[prevIndex].id);
-            }}
-            enableSwipe={true}
-          >
-            <Suspense fallback={<MobileSkeleton />}>
-              <CurrentComponent />
-            </Suspense>
-          </Container>
-        ) : (
-          <MobileSkeleton />
-        )}
+        <Suspense fallback={<MobileSkeleton />}>
+          <CurrentComponent />
+        </Suspense>
       </div>
 
-      {/* iOS-style Tab Bar */}
-      {TabBar ? (
-        <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      ) : (
-        <div className="mobile-tab-placeholder" />
-      )}
+      {/* Simple Tab Bar */}
+      <div className="mobile-tab-bar">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            className={`mobile-tab-item ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.icon === 'Activity' && <Activity size={20} />}
+            {tab.icon === 'Shield' && <Shield size={20} />}
+            {tab.icon === 'Key' && <Key size={20} />}
+            {tab.icon === 'BarChart3' && <BarChart3 size={20} />}
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
+}
+
+// Basic mobile styles
+const mobileStyles = `
+  .mobile-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-0, #ffffff);
+  }
+
+  .mobile-content-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .mobile-tab-bar {
+    display: flex;
+    height: 83px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .mobile-tab-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: #8E8E93;
+    font-size: 10px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-tab-item.active {
+    color: #007AFF;
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement('style');
+  styleSheet.textContent = mobileStyles;
+  document.head.appendChild(styleSheet);
 }

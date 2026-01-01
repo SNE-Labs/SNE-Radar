@@ -543,7 +543,7 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
   return (
     <div className="flex flex-1">
       {/* Main Content */}
-      <div className="flex-1 px-8 py-6 overflow-y-auto">
+    <div className="flex-1 px-8 py-6 overflow-y-auto">
         <div className="max-w-4xl mx-auto">
           {/* Transparent Navigation Selector */}
           <div className="mb-6">
@@ -585,7 +585,7 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
                 )}
               </select>
               <ChevronRight className="w-3 h-3 pointer-events-none" style={{ color: "var(--text-3)" }} />
-            </div>
+        </div>
 
             {/* Mobile Drawer Button */}
             <div className="mt-3 lg:hidden">
@@ -660,9 +660,9 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
                 >
                   {currentContent.tldr}
                 </p>
-              </div>
-            )}
           </div>
+            )}
+        </div>
 
           {/* Content Sections */}
           <div className="space-y-5 break-words">
@@ -678,7 +678,7 @@ echo "$hash" | openssl dgst -sha256 -sign node_private.pem | base64
                   {section.content && (
                     <p
                       className="mb-4 text-sm break-words whitespace-normal"
-                      style={{
+              style={{
                         color: "var(--text-2)",
                         overflowWrap: "anywhere",
                         wordBreak: "break-word",
@@ -979,13 +979,13 @@ const client = new SNEClient({
             )}
 
             {selectedDoc === "pou" && (
-              <div>
+                <div>
                 <h3
                   className="mb-4 break-words"
                   style={{ color: "var(--text-1)" }}
                 >
                   Exemplo: Gerar e Submeter PoU
-                </h3>
+                  </h3>
                 <div className="overflow-auto">
                   <CodeBlock
                     language="bash"
@@ -1037,7 +1037,7 @@ const client = new SNEClient({
                     language="text"
                     code={content.nte.code}
                   />
-                </div>
+        </div>
 
                 <p
                   className="break-words whitespace-normal"
@@ -1087,7 +1087,7 @@ const client = new SNEClient({
                   style={{ color: "var(--text-1)" }}
                 >
                   Componentes do SNE Box
-                </h3>
+          </h3>
                 <p
                   className="break-words whitespace-normal"
                   style={{
@@ -1101,7 +1101,7 @@ const client = new SNEClient({
                   Root of Trust e o fluxo sincronizado de provas
                   submetidas à Scroll L2.
                 </p>
-              </div>
+          </div>
             )}
 
             {selectedDoc === "hardware" && (
@@ -1133,7 +1133,7 @@ const client = new SNEClient({
                     integrado.
                   </li>
                 </ul>
-              </div>
+        </div>
             )}
 
             {selectedDoc === "governance" && (
@@ -1161,7 +1161,7 @@ const client = new SNEClient({
             )}
 
             {selectedDoc === "appendix" && (
-              <div>
+          <div>
                 <h3
                   className="mb-4 break-words"
                   style={{ color: "var(--text-1)" }}
