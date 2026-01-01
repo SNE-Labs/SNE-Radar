@@ -22,17 +22,7 @@ const DesktopVault = lazy(() => import('./pages/Vault').then(m => ({ default: m.
 const DesktopPass = lazy(() => import('./pages/Pass').then(m => ({ default: m.Pass })));
 
 // Mobile components (lazy loaded only when needed)
-const MobileRadar = lazy(() => import('./pages/mobile/Radar').then(m => ({ default: m.MobileRadar })));
-const MobileVault = lazy(() => import('./pages/mobile/Vault').then(m => ({ default: m.MobileVault })));
-const MobilePass = lazy(() => import('./pages/mobile/Pass').then(m => ({ default: m.MobilePass })));
 const MobileLayout = lazy(() => import('./layouts/MobileLayout').then(m => ({ default: m.MobileLayout })));
-
-const getMobileComponents = () => ({
-  MobileRadar,
-  MobileVault,
-  MobilePass,
-  MobileLayout
-});
 
 import { AuthProvider } from '@/lib/auth/AuthProvider.tsx';
 import { EntitlementsProvider } from '@/lib/auth/EntitlementsProvider.tsx';
@@ -41,34 +31,23 @@ import { EntitlementsProvider } from '@/lib/auth/EntitlementsProvider.tsx';
 function AppContent() {
   // Simplified platform detection without complex hooks
   const [isMobile, setIsMobile] = React.useState(false);
-  const [mobileComponentsLoaded, setMobileComponentsLoaded] = React.useState(false);
 
   React.useEffect(() => {
     const checkMobile = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-
-      // Mark mobile components as loaded when mobile is detected
-      if (mobile && !mobileComponentsLoaded) {
-        setMobileComponentsLoaded(true);
-      }
+      setIsMobile(window.innerWidth <= 768);
     };
 
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, [mobileComponentsLoaded]);
+  }, []);
 
-  if (isMobile && mobileComponentsLoaded) {
+  if (isMobile) {
     return (
       <Suspense fallback={<MobileSkeleton />}>
         <MobileLayout />
       </Suspense>
     );
-  }
-
-  if (isMobile && !mobileComponentsLoaded) {
-    return <MobileSkeleton />;
   }
 
   // Desktop Layout (existing)
