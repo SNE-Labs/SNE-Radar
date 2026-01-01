@@ -54,11 +54,16 @@ export function usePlatform() {
         ),
         // Detectar dispositivos low-end baseado em memória e CPU
         isLowEndDevice: (() => {
-          const memory = (navigator as any).deviceMemory;
-          const cores = navigator.hardwareConcurrency;
+          try {
+            const memory = (navigator as any).deviceMemory;
+            const cores = navigator.hardwareConcurrency;
 
-          // Estimativa de low-end: < 4GB RAM ou < 4 cores
-          return (memory && memory < 4) || (cores && cores < 4);
+            // Estimativa de low-end: < 4GB RAM ou < 4 cores
+            return (memory && memory < 4) || (cores && cores < 4);
+          } catch (error) {
+            // Fallback para false se houver erro
+            return false;
+          }
         })(),
       };
 

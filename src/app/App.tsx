@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { WagmiProvider, createConfig, http, injected } from 'wagmi';
 import { scroll } from 'viem/chains';
 import { Suspense, lazy } from 'react';
+import React from 'react';
 
 // Desktop Components (carregados normalmente)
 import { Sidebar } from './components/Sidebar';
@@ -30,11 +31,21 @@ const MobileLayout = lazy(() => import('./layouts/MobileLayout'));
 
 import { AuthProvider } from '@/lib/auth/AuthProvider.tsx';
 import { EntitlementsProvider } from '@/lib/auth/EntitlementsProvider.tsx';
-import { usePlatform } from '@/hooks/usePlatform';
 
 // Componente que decide qual layout usar baseado na plataforma
 function AppContent() {
-  const { isMobile } = usePlatform();
+  // Simplified platform detection without complex hooks
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (isMobile) {
     return (
